@@ -28,8 +28,8 @@ main:
 	expr EOL 		{ $1 }
 ;
 expr:
-	| operation {$1}
-	| language {$1}
+	| operation { $1 }
+	| language { $1 }
 ;
 operation:
 	| language UNION language { union $1 $3 }
