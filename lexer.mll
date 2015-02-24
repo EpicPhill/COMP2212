@@ -5,14 +5,14 @@
 
 rule main = parse 
 	| [' ' '\t' '\n'] { main lexbuf }
+	| 'U' { UNION }
+	| 'N' { INTERSECT }
 	| ['a'-'z']+ as lxm { WORD lxm }
 	| '}' { CLOSELANG }
 	| ',' { WORDSEP }  
 	| '{' { OPENLANG }
-	| 'U' { UNION }
-	| 'N' { INTERSECT }
 	| ';' { EOL }	
-	| eof {raise Eof}
+	| eof { EOF }
 
 (* can this work?
 and words = parse 

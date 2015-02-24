@@ -14,5 +14,9 @@ let rec intersection (l1:lang) (l2:lang) = match l1 with
 let rec removedupes l:lang = match (order l) with
     	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
     	| smaller -> smaller;;
+let explode s = 
+	let rec explodehelper curr exploded =
+		if curr < 0 then exploded else 
+			explodehelper (curr-1) (s.[curr] :: exploded) in
+	explodehelper (String.length s -1) [];;
 
-	

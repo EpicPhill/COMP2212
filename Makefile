@@ -2,7 +2,7 @@
 # Rules for compiling and linking the typechecker/evaluator
 #
 # Type
-#   make         to rebuild the executable file cw
+#   make         to rebuild the executable file c
 #   make clean   to remove all intermediate and temporary files
 #   make depend  to rebuild the intermodule dependency graph that is used
 #                  by make to determine which order to schedule 
@@ -13,10 +13,12 @@
 
 # These are the object files needed to rebuild the main executable file
 #
-OBJS =   parser.cmo lexer.cmo operations.cmo main.cmo
+OBJS = parser.cmo lexer.cmo expr.cmo operations.cmo main.cmo 
+
+COMMONOBJS = str.cma
 
 # Files that need to be generated from other files
-DEPEND += lexer.ml parser.ml 
+DEPEND += lexer.ml parser.ml  
 
 # When "make" is invoked with no arguments, we build an executable 
 # typechecker, after building everything that it depends on
@@ -53,10 +55,12 @@ parser.ml parser.mli: parser.mly
 # Clean up the directory
 clean::
 	rm -rf lexer.ml parser.ml parser.mli *.o *.cmo *.cmi parser.output \
-	   cw TAGS *~ 
+	   c TAGS *~ 
 
 # Rebuild intermodule dependencies
 depend:: $(DEPEND) 
 	ocamldep $(INCLUDE) *.mli *.ml > .depend
 
 # 
+test::
+	bash test.sh
