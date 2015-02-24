@@ -22,23 +22,20 @@ let rec intersection (l1:lang) (l2:lang) =
 %start main
 %type <string list> main
 %type <string list> language
-%type <string list> languagelist
+%type <string list> operation
 %%
 main:
 	expr EOL 		{ $1 }
 ;
 expr:
 	| operation { $1 }
-	| language { $1 }
+	| OPENLANG language CLOSELANG { $2 }
 ;
 operation:
-	| language UNION language { union $1 $3 }
-	| language INTERSECT language { intersection $1 $3 }
+	| expr UNION expr { union $1 $3 }
+	| expr INTERSECT expr { intersection $1 $3 }
 ;
 language:
-	| OPENLANG languagelist CLOSELANG { $2 }
-;
-languagelist:
-	| WORD WORDSEP languagelist	{ [$1]@$3 }
+	| WORD WORDSEP language	{ [$1]@$3 }
 	| WORD			{ [$1] }
 ;

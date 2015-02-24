@@ -4,12 +4,22 @@
 }
 
 rule main = parse 
-	| [' ' '\t'] { main lexbuf }
-	| ['\n'] {EOL}
-	| '{' { OPENLANG }
+	| [' ' '\t' '\n'] { main lexbuf }
+	| ['a'-'z']+ as lxm { WORD lxm }
 	| '}' { CLOSELANG }
 	| ',' { WORDSEP }  
+	| '{' { OPENLANG }
 	| 'U' { UNION }
 	| 'N' { INTERSECT }
-	| ['a'-'z']+ as lxm { WORD lxm }
+	| ';' { EOL }	
 	| eof {raise Eof}
+
+(* can this work?
+and words = parse 
+	| [' ' '\t' '\n'] { words lexbuf }
+	| ['a'-'z']+ as lxm { WORD lxm }
+	| '}' { main lexbuf }
+	| ',' { WORDSEP }  
+	| eof {raise Eof}
+*)
+
