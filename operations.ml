@@ -5,6 +5,10 @@ type expr =
 	| Lang of lang
 	| LitI of int
 	| Input of lang list * int
+let fst_input = function
+	|Input(l,i) -> l | _ -> failwith "not an input type";;
+let snd_input = function
+	|Input(l,i) -> i | _ -> failwith "not an input type";;
 let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
@@ -50,7 +54,7 @@ let rec print_list_nicely = function
 let prettyprint = function
 	| (LitI i) -> print_int i
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
-let readin =
+let readin = fun () ->
 	try
 		let rec read langlist =
 			let line = input_line stdin in

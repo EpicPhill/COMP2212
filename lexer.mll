@@ -5,13 +5,23 @@
 
 rule main = parse 
 	| [' ' '\t' '\n'] { main lexbuf }
+	| ['0'-'9']+ as lxm { INT(int_of_string lxm) }
 	| 'U' { UNION }
 	| 'N' { INTERSECT }
-	| ['a'-'z']+ as lxm { WORD lxm }
-	| '}' { CLOSELANG }
-	| ',' { WORDSEP }  
-	| '{' { OPENLANG }
+	| "int" { ITYPE }
+	| "read" { READ }
+	| "let" { LET }
+	| "in" { IN }
+	| "append" { APPEND }
+	| '}' { CURLYCLOSE }
+	| ',' { COMMA }  
+	| '{' { CURLYOPEN }
+	| ')' { BRACECLOSE }
+	| '(' { BRACEOPEN }
+	| '=' { EQUALS }
+	| ':' { COLON }
 	| ';' { EOL }	
+	| ['a'-'z']+ as lxm { STRING lxm }
 	| eof { EOF }
 
 (* can this work?
