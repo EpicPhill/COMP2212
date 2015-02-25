@@ -1,5 +1,8 @@
 type word = bytes;;
 type lang = word list;;
+type expr = 
+	| Lang of lang
+	| LitI of int
 let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
@@ -19,4 +22,29 @@ let explode s =
 		if curr < 0 then exploded else 
 			explodehelper (curr-1) (s.[curr] :: exploded) in
 	explodehelper (String.length s -1) [];;
-
+let makestring (c:char) = String.make 1 c;;
+let rec add_char_to_last l c = match l with
+	| e :: [] -> [e^makestring c]
+	| h :: t -> h::add_char_to_last t c;;
+let convertlang l = 
+	let rec converthelper (stringlist: char list) combo = match stringlist with
+		| [] | _::[] -> combo
+		| a :: ('}' :: _ ) -> combo 
+		| '{' :: ( e :: _ as t ) -> converthelper t [makestring e] 
+		| ',' :: ( e :: _ as t ) -> converthelper t (combo@[makestring e])
+		| a :: ( ',' :: _ as t ) -> converthelper t combo
+		| a :: ( e :: _ as t) -> converthelper t (add_char_to_last combo e) in
+	converthelper (explode l) [];;
+(*let processline = function
+	| ['0'-'9']+ -> print_string "int"
+	| _ -> print_string "lang"
+*)
+let readinput = fun() -> 
+	try
+		while true do
+			let line = input_line stdin in
+			Printf.printf "%s\n" line
+		done;
+		None
+	with
+		End_of_file -> None;;
