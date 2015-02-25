@@ -6,6 +6,7 @@
 rule main = parse 
 	| [' ' '\t' '\n'] { main lexbuf }
 	| ['0'-'9']+ as lxm { INT(int_of_string lxm) }
+	| '''['a'-'z']''' as lxm { CHAR(lxm) }
 	| 'U' { UNION }
 	| 'N' { INTERSECT }
 	| "int" { ITYPE }
@@ -20,6 +21,7 @@ rule main = parse
 	| '(' { BRACEOPEN }
 	| '=' { EQUALS }
 	| ':' { COLON }
+	| ''' { QUOTE }
 	| ';' { EOL }	
 	| ['a'-'z']+ as lxm { STRING lxm }
 	| eof { EOF }

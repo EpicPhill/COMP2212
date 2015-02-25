@@ -1,5 +1,5 @@
 
-type typeExpr = LangTy | BTy | ITy
+type typeExpr = LangTy | BTy | ITy | CTy
 
 type word = string
 type lang = string list
@@ -9,6 +9,7 @@ type expr =
 	| Var of string
 	| LitB of bool
 	| LitI of int
+	| LitC of char
 	| Word of word
 	| Lang of lang
 	(* maybe? *)
@@ -31,6 +32,9 @@ let rec union (l1:lang) (l2:lang) = match l1 with
 	| h::t -> if contains l2 h then union t l2 else union t (h::l2);;
 let rec intersection (l1:lang) (l2:lang) = match l1 with
 	| h::t -> if contains l2 h then h :: intersection t l2 else intersection t l2
+	| smaller -> smaller;;
+let rec append (l:lang) (c:char) = match l with
+	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
 
 let order (l:lang) = List.sort compare l;;
@@ -87,6 +91,7 @@ let rec lookup env v = match env with
                                      else lookup rest v
 
 let asLang = function Lang l -> l | _ -> failwith "not a lang"
+let asChar = function LitC c -> c | _ -> failwith "not a char"
 
 exception Stuck
 
@@ -101,6 +106,7 @@ let rec eval_helper func_env arg_env term =
         | (Var v) -> lookup arg_env v
         | (LitI i) -> LitI i
         | (LitB b) -> LitB b
+	| (LitC c) -> LitC c
 	| (Word w) -> Word w
         | (Lang l) -> Lang l
 	(*
@@ -134,6 +140,8 @@ let rec eval_helper func_env arg_env term =
 		Lang (union (asLang l1) (asLang l2))
 	| (IntersectionExpr (l1,l2)) ->
 		Lang (intersection (asLang l1) (asLang l2))
+	| (AppendExpr (l,c)) ->
+		Lang (append (asLang l) (asChar c))
 	| Read -> 
 		readin ()
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
@@ -160,7 +168,8 @@ exception NonBaseTypeResult
 let rec print_res res = match res with
 	| (LitI i) -> print_int i
 	| (LitB b) -> print_string (if b then "true" else "false")
-   	| (Word w) -> print_string w
+   	| (LitC c) -> print_char c
+	| (Word w) -> print_string w
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}'
 	| (LangList (h::t as l)) -> print_list_nicely h; print_newline; print_res (LangList t)
 	| _ -> raise NonBaseTypeResult

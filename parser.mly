@@ -18,11 +18,20 @@ let rec removedupes l:lang = match (order l) with
 *)
 	(* something to allow for letting of variables? | LET BRACEOPEN STRING COLON type_spec BRACECLOSE EQUALS expr IN expr
 	this can very likely be tighened up 		| LET BRACEOPEN BRACEOPEN STRING COLON type_spec BRACECLOSE COMMA BRACEOPEN STRING COLON type_spec BRACECLOSE BRACECLOSE EQUALS expr IN expr *)
+	
+let explode s = 
+	let rec explodehelper curr exploded =
+		if curr < 0 then exploded else 
+			explodehelper (curr-1) (s.[curr] :: exploded) in
+	explodehelper (String.length s -1) [];;
+let char_from_string s = s.[1];;
 %}
 %token <string> STRING
 %token <string list> LANG
 %token <int> INT
+%token <string> CHAR
 %token READ LET IN
+%token QUOTE
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
@@ -36,6 +45,7 @@ let rec removedupes l:lang = match (order l) with
 %type <Expr.expr> expr
 %type <Expr.typeExpr> type_spec 
 %type <string list> language
+%type <char> character 
 %%
 main:
 	expr EOF 		{ $1 }
@@ -46,6 +56,7 @@ type_spec:
 ;
 expr:
 	| INT			{ LitI $1 }
+	| character		{ LitC $1 }
 	| STRING		{ Var $1 }
 	| language		{ Lang $1 }
 	| LET STRING BRACEOPEN STRING COLON type_spec BRACECLOSE type_spec EQUALS expr IN expr 	{ Function ($2,$4,$6,$8,$10,$12) }
@@ -53,7 +64,7 @@ expr:
  	| expr BRACEOPEN expr BRACECLOSE     { AppExpr ($1, $3) }
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
-	| expr APPEND expr	{ AppendExpr ($1,$3) }
+	| expr APPEND expr	{ print_string "append"; AppendExpr ($1,$3) }
 ;
 language:
 	| CURLYOPEN languagelist CURLYCLOSE { $2 }
@@ -62,3 +73,5 @@ languagelist:
 	| STRING COMMA languagelist	{ [$1]@$3 }
 	| STRING			{ [$1] }
 ;
+character:
+	| CHAR 		{ (char_from_string $1) } 

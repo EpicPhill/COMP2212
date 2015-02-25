@@ -2,6 +2,7 @@
 *.cmi
 *.cmo
 *.output
+*.ol
 cw
 parser.ml*
 lexer.ml
