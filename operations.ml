@@ -1,8 +1,10 @@
 type word = bytes;;
 type lang = word list;;
 type expr = 
+	| None
 	| Lang of lang
 	| LitI of int
+	| Input of lang list * int
 let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
@@ -24,6 +26,7 @@ let explode s =
 	explodehelper (String.length s -1) [];;
 let makestring (c:char) = String.make 1 c;;
 let rec add_char_to_last l c = match l with
+	| [] -> []
 	| e :: [] -> [e^makestring c]
 	| h :: t -> h::add_char_to_last t c;;
 let convertlang l = 
@@ -35,16 +38,26 @@ let convertlang l =
 		| a :: ( ',' :: _ as t ) -> converthelper t combo
 		| a :: ( e :: _ as t) -> converthelper t (add_char_to_last combo e) in
 	converthelper (explode l) [];;
-(*let processline = function
-	| ['0'-'9']+ -> print_string "int"
-	| _ -> print_string "lang"
-*)
-let readinput = fun() -> 
+let processline line = 
+	if (line.[0] = '{') then
+		(Lang (convertlang line))
+	else 
+		(LitI (int_of_string line));;
+let rec print_list_nicely = function
+	| [] -> () 
+	| h::[] -> print_string h
+	| h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
+let prettyprint = function
+	| (LitI i) -> print_int i
+	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
+let readin =
 	try
-		while true do
+		let rec read langlist =
 			let line = input_line stdin in
-			Printf.printf "%s\n" line
-		done;
-		None
+				let processed = processline line in
+				match (processed) with
+					| (LitI i) -> Input (langlist,i)
+					| (Lang l) -> read (langlist@[l])
+		in read []
 	with
 		End_of_file -> None;;
