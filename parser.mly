@@ -35,7 +35,8 @@ let char_from_string s = s.[1];;
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
-%token ITYPE LTYPE
+%token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
+%token LANGS LIMIT
 %token UNION INTERSECT APPEND
 %token EOL EOF
 %left APPEND
@@ -53,6 +54,9 @@ main:
 type_spec:
 	| ITYPE			{ ITy }
 	| LTYPE			{ LangTy }
+	| LANGLISTTYPE		{ LangListTy }
+	| CTYPE			{ CTy }
+	| RESULTTYPE		{ ResultTy } 
 ;
 expr:
 	| INT			{ LitI $1 }
@@ -64,7 +68,10 @@ expr:
  	| expr BRACEOPEN expr BRACECLOSE     { AppExpr ($1, $3) }
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
-	| expr APPEND expr	{ print_string "append"; AppendExpr ($1,$3) }
+	| expr APPEND expr	{ AppendExpr ($1,$3) }
+	| LANGS		{ InputLang }
+	| LIMIT 		{ InputLimit }
+	| BRACEOPEN expr BRACECLOSE { $2 }
 ;
 language:
 	| CURLYOPEN languagelist CURLYCLOSE { $2 }

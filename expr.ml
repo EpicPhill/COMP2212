@@ -1,5 +1,5 @@
 
-type typeExpr = LangTy | BTy | ITy | CTy
+type typeExpr = LangTy | BTy | ITy | CTy | ResultTy | LangListTy
 
 type word = string
 type lang = string list
@@ -15,6 +15,8 @@ type expr =
 	(* maybe? *)
 	| LangList of lang list
 	| Input of lang list * int
+	| InputLang 
+	| InputLimit 
 	(* exprs to chain operations? *)
 	| UnionExpr of expr * expr
 	| IntersectionExpr of expr * expr
@@ -72,6 +74,19 @@ let rec print_list_nicely = function
 let prettyprint = function
 	| (LitI i) -> print_int i
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
+
+let rec lookup env v = match env with 
+    | [] -> failwith ("cannot find var: " ^ v)
+    | (vname, vvalue) :: rest -> if v = vname 
+                                     then vvalue
+                                     else lookup rest v
+
+let asLang = function Lang l -> l | _ -> failwith "not a lang"
+let asChar = function LitC c -> c | _ -> failwith "not a char"
+
+let readLangs = ref [];;
+let readLimit = ref 0;;
+
 let readin = fun () ->
 	try
 		let rec read langlist =
@@ -84,14 +99,9 @@ let readin = fun () ->
 	with
 		End_of_file -> None;;
 
-let rec lookup env v = match env with 
-    | [] -> failwith ("cannot find var: " ^ v)
-    | (vname, vvalue) :: rest -> if v = vname 
-                                     then vvalue
-                                     else lookup rest v
-
-let asLang = function Lang l -> l | _ -> failwith "not a lang"
-let asChar = function LitC c -> c | _ -> failwith "not a char"
+let read = match readin() with
+	| Input (l,i) -> readLangs := l; readLimit := i
+	| _ -> failwith "problem reading input";;
 
 exception Stuck
 
@@ -103,12 +113,15 @@ let rec eval_helper func_env arg_env term =
               | (LitI x', LitI y') -> (x', y')
               | _ -> raise Stuck)
     in match term with
-        | (Var v) -> lookup arg_env v
+        None -> None
+	| (Var v) -> lookup arg_env v
         | (LitI i) -> LitI i
         | (LitB b) -> LitB b
 	| (LitC c) -> LitC c
 	| (Word w) -> Word w
         | (Lang l) -> Lang l
+	| (Input (l,i)) -> None
+	| (LangList ll) -> LangList ll
 	(*
 	| (ConditionalExpr (cond, tExpr, fExpr)) -> 
             let condEval = eval_helper func_env arg_env cond
@@ -144,6 +157,10 @@ let rec eval_helper func_env arg_env term =
 		Lang (append (asLang l) (asChar c))
 	| Read -> 
 		readin ()
+	| (InputLang) ->
+		(LangList (!readLangs))  
+	| (InputLimit) ->
+		(LitI (!readLimit))
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) -> 
@@ -157,7 +174,6 @@ let rec eval_helper func_env arg_env term =
 
 let eval term = eval_helper [] [] term ;;
 
-
 let rec print_list_nicely = function
 	| [] -> () 
 	| h::[] -> print_string h
@@ -166,10 +182,11 @@ let rec print_list_nicely = function
 exception NonBaseTypeResult
 
 let rec print_res res = match res with
+	| None | (LangList ([])) -> ()
 	| (LitI i) -> print_int i
 	| (LitB b) -> print_string (if b then "true" else "false")
    	| (LitC c) -> print_char c
 	| (Word w) -> print_string w
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}'
-	| (LangList (h::t as l)) -> print_list_nicely h; print_newline; print_res (LangList t)
+	| (LangList (h::t as l)) -> print_res (Lang h); print_newline(); print_res (LangList t)
 	| _ -> raise NonBaseTypeResult
