@@ -13,12 +13,15 @@ rule main = parse
 	| "char" { CTYPE }
 	| "result" { RESULTTYPE }
 	| "langlist" { LANGLISTTYPE }
+	| "lang"	{ LTYPE }
 	| "read" { READ }
 	| "let" { LET }
 	| "in" { IN }
 	| "append" { APPEND }
 	| "limit" { LIMIT }
 	| "langs" { LANGS }
+	| "get" { GET }
+	| "getinput" { GETINPUTLANG }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }

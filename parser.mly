@@ -36,7 +36,7 @@ let char_from_string s = s.[1];;
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
-%token LANGS LIMIT
+%token LANGS LIMIT GET GETINPUTLANG
 %token UNION INTERSECT APPEND
 %token EOL EOF
 %left APPEND
@@ -69,8 +69,9 @@ expr:
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
-	| LANGS		{ InputLang }
+	| LANGS			{ InputLang }
 	| LIMIT 		{ InputLimit }
+	| GETINPUTLANG expr		{ GetInputLangExpr ($2) } 
 	| BRACEOPEN expr BRACECLOSE { $2 }
 ;
 language:

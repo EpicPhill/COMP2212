@@ -17,6 +17,7 @@ type expr =
 	| Input of lang list * int
 	| InputLang 
 	| InputLimit 
+	| GetInputLangExpr of expr
 	(* exprs to chain operations? *)
 	| UnionExpr of expr * expr
 	| IntersectionExpr of expr * expr
@@ -83,19 +84,21 @@ let rec lookup env v = match env with
 
 let asLang = function Lang l -> l | _ -> failwith "not a lang"
 let asChar = function LitC c -> c | _ -> failwith "not a char"
+let asList = function LangList l -> l | e -> failwith "not a list"
+let asInt = function LitI i -> i | _ -> failwith "not an int"
 
 let readLangs = ref [];;
 let readLimit = ref 0;;
 
 let readin = fun () ->
 	try
-		let rec read langlist =
+		let rec readinner (inlist: lang list) =
 			let line = input_line stdin in
 				let processed = processline line in
 				match (processed) with
-					| (LitI i) -> Input (langlist,i)
-					| (Lang l) -> read (langlist@[l])
-		in read []
+					| (LitI i) -> Input (inlist,i)
+					| (Lang l) -> readinner (inlist@[l])
+		in readinner []
 	with
 		End_of_file -> None;;
 
@@ -111,7 +114,12 @@ let rec eval_helper func_env arg_env term =
         and yEval = eval_helper func_env arg_env y
         in (match (xEval, yEval) with
               | (LitI x', LitI y') -> (x', y')
-              | _ -> raise Stuck)
+              | _ -> raise Stuck) in
+    let to_lang_or_stuck(l) =
+	let lEval = eval_helper func_env arg_env l
+	in (match (lEval) with
+		| (Lang l') -> (l')
+		| _ -> raise Stuck)
     in match term with
         None -> None
 	| (Var v) -> lookup arg_env v
@@ -130,7 +138,7 @@ let rec eval_helper func_env arg_env term =
                       eval_helper func_env arg_env (if b then tExpr else fExpr)
                   | _ -> raise Stuck)
 
-        | (AddExpr (x, y)) -> 
+        |i (AddExpr (x, y)) -> 
             let (x', y') = to_int_or_stuck (x, y) 
             in LitI (x' + y')
         | (SubExpr (x, y)) -> 
@@ -154,13 +162,15 @@ let rec eval_helper func_env arg_env term =
 	| (IntersectionExpr (l1,l2)) ->
 		Lang (intersection (asLang l1) (asLang l2))
 	| (AppendExpr (l,c)) ->
-		Lang (append (asLang l) (asChar c))
+		Lang (append (to_lang_or_stuck l) (asChar c))
 	| Read -> 
 		readin ()
 	| (InputLang) ->
-		(LangList (!readLangs))  
+		(LangList !readLangs)  
 	| (InputLimit) ->
-		(LitI (!readLimit))
+		(LitI !readLimit)
+	| (GetInputLangExpr (i)) ->
+		Lang (List.nth !readLangs (asInt i))
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) -> 
