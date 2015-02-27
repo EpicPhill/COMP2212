@@ -13,6 +13,7 @@ let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
 let order (l:lang) = List.sort compare l;;
+let reverse (l:lang) = List.rev l;;
 let contains (l:lang) (w:word) = List.exists (fun e -> e = w) l;;
 let rec union (l1:lang) (l2:lang) = match l1 with
 	| [] -> l2
@@ -33,6 +34,7 @@ let rec add_char_to_last l c = match l with
 	| [] -> []
 	| e :: [] -> [e^makestring c]
 	| h :: t -> h::add_char_to_last t c;;
+let get_random_word l = List.nth l (Random.int (List.length l));;
 let convertlang l = 
 	let rec converthelper (stringlist: char list) combo = match stringlist with
 		| [] | _::[] -> combo
@@ -54,6 +56,9 @@ let rec print_list_nicely = function
 let prettyprint = function
 	| (LitI i) -> print_int i
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
+let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
+	| (_,0) -> reverse l
+	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;
 let readin = fun () ->
 	try
 		let rec read langlist =

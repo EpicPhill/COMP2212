@@ -10,12 +10,19 @@ rule main = parse
 	| 'U' { UNION }
 	| 'N' { INTERSECT }
 	| "int" { ITYPE }
+	| "char" { CTYPE }
+	| "result" { RESULTTYPE }
+	| "langlist" { LANGLISTTYPE }
+	| "lang"	{ LTYPE }
 	| "read" { READ }
 	| "let" { LET }
 	| "in" { IN }
 	| "append" { APPEND }
 	| '<' {LESSTHAN }
 	| '>' {MORETHAN }
+	| "limit" { LIMIT }
+	| "langs" { LANGS }
+	| "get" { GET }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }

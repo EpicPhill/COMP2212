@@ -23,6 +23,7 @@ open Arg
 open Printf
 
 let parseProgram c = 
+    read;
     try let lexbuf = Lexing.from_channel c in  
             Parser.main Lexer.main lexbuf 
     with Parsing.Parse_error -> failwith "Parse failure!" ;;
