@@ -17,7 +17,7 @@ type expr =
 	| Input of lang list * int
 	| InputLang 
 	| InputLimit 
-	| GetInputLangExpr of expr
+	| GetExpr of expr * expr
 	(* exprs to chain operations? *)
 	| UnionExpr of expr * expr
 	| IntersectionExpr of expr * expr
@@ -109,7 +109,12 @@ let read = match readin() with
 exception Stuck
 
 let rec eval_helper func_env arg_env term = 
-    let to_int_or_stuck(x, y) = 
+    let to_int_or_stuck(i) =
+	let iEval = eval_helper func_env arg_env i
+	in (match (iEval) with
+		| (LitI i') -> (i')
+		| _ -> raise Stuck) in
+    let to_int_pair_or_stuck(x, y) = 
         let xEval = eval_helper func_env arg_env x 
         and yEval = eval_helper func_env arg_env y
         in (match (xEval, yEval) with
@@ -119,6 +124,11 @@ let rec eval_helper func_env arg_env term =
 	let lEval = eval_helper func_env arg_env l
 	in (match (lEval) with
 		| (Lang l') -> (l')
+		| _ -> raise Stuck) in
+    let to_langlist_or_stuck(l) =
+	let lEval = eval_helper func_env arg_env l
+	in (match (lEval) with
+		| (LangList l') -> (l')
 		| _ -> raise Stuck)
     in match term with
         None -> None
@@ -158,19 +168,19 @@ let rec eval_helper func_env arg_env term =
             in LitB (x' = y')
         *)
 	| (UnionExpr (l1, l2)) ->
-		Lang (union (asLang l1) (asLang l2))
+		Lang (removedupes (union (to_lang_or_stuck l1) (to_lang_or_stuck l2)))
 	| (IntersectionExpr (l1,l2)) ->
-		Lang (intersection (asLang l1) (asLang l2))
+		Lang (removedupes (intersection (asLang l1) (asLang l2)))
 	| (AppendExpr (l,c)) ->
-		Lang (append (to_lang_or_stuck l) (asChar c))
+		Lang (removedupes (append (to_lang_or_stuck l) (asChar c)))
 	| Read -> 
 		readin ()
 	| (InputLang) ->
 		(LangList !readLangs)  
 	| (InputLimit) ->
 		(LitI !readLimit)
-	| (GetInputLangExpr (i)) ->
-		Lang (List.nth !readLangs (asInt i))
+	| (GetExpr (l,i)) ->
+		Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) -> 

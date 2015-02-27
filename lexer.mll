@@ -21,7 +21,6 @@ rule main = parse
 	| "limit" { LIMIT }
 	| "langs" { LANGS }
 	| "get" { GET }
-	| "getinput" { GETINPUTLANG }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }

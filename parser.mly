@@ -71,7 +71,7 @@ expr:
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
 	| LANGS			{ InputLang }
 	| LIMIT 		{ InputLimit }
-	| GETINPUTLANG expr		{ GetInputLangExpr ($2) } 
+	| expr GET expr		{ GetExpr ($1,$3) } 
 	| BRACEOPEN expr BRACECLOSE { $2 }
 ;
 language:
