@@ -14,6 +14,8 @@ rule main = parse
 	| "let" { LET }
 	| "in" { IN }
 	| "append" { APPEND }
+	| '<' {LESSTHAN }
+	| '>' {MORETHAN }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }
