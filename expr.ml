@@ -19,6 +19,7 @@ type expr =
 	| InputLimit 
 	| GetExpr of expr * expr
 	(* exprs to chain operations? *)
+	(* not sure if you need to GreaterThanExpr of here?*)
 	| UnionExpr of expr * expr
 	| IntersectionExpr of expr * expr
 	| AppendExpr of expr * expr
@@ -140,7 +141,7 @@ let rec eval_helper func_env arg_env term =
         | (Lang l) -> Lang l
 	| (Input (l,i)) -> None
 	| (LangList ll) -> LangList ll
-	(*
+	
 	| (ConditionalExpr (cond, tExpr, fExpr)) -> 
             let condEval = eval_helper func_env arg_env cond
             in (match condEval with
@@ -148,7 +149,7 @@ let rec eval_helper func_env arg_env term =
                       eval_helper func_env arg_env (if b then tExpr else fExpr)
                   | _ -> raise Stuck)
 
-        |i (AddExpr (x, y)) -> 
+        | (AddExpr (x, y)) -> 
             let (x', y') = to_int_or_stuck (x, y) 
             in LitI (x' + y')
         | (SubExpr (x, y)) -> 
@@ -166,7 +167,7 @@ let rec eval_helper func_env arg_env term =
         | (EqualExpr (x, y)) -> 
             let (x', y') = to_int_or_stuck (x, y) 
             in LitB (x' = y')
-        *)
+        
 	| (UnionExpr (l1, l2)) ->
 		Lang (removedupes (union (to_lang_or_stuck l1) (to_lang_or_stuck l2)))
 	| (IntersectionExpr (l1,l2)) ->

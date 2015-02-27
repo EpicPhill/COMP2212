@@ -32,6 +32,7 @@ let char_from_string s = s.[1];;
 %token <string> CHAR
 %token READ LET IN
 %token QUOTE
+%token LESSTHAN MORETHAN
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
@@ -69,6 +70,8 @@ expr:
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
+	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
+	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
 	| LANGS			{ InputLang }
 	| LIMIT 		{ InputLimit }
 	| expr GET expr		{ GetExpr ($1,$3) } 
