@@ -15,11 +15,17 @@ type expr =
 	(* maybe? *)
 	| LangList of lang list
 	| Input of lang list * int
-	| InputLang 
-	| InputLimit 
+	| InputLang of expr 
+	| InputLimit of expr
 	| GetExpr of expr * expr
 	(* exprs to chain operations? *)
-	(* not sure if you need to GreaterThanExpr of here?*)
+	| AddExpr of expr * expr
+	| SubExpr of expr * expr
+	| MultExpr of expr * expr
+	| EqualExpr of expr * expr
+	| GreaterThanExpr of expr * expr
+	| LessThanExpr of expr * expr
+	| ConditionalExpr of expr * expr * expr
 	| UnionExpr of expr * expr
 	| IntersectionExpr of expr * expr
 	| AppendExpr of expr * expr
@@ -82,15 +88,10 @@ let rec lookup env v = match env with
     | (vname, vvalue) :: rest -> if v = vname 
                                      then vvalue
                                      else lookup rest v
-
-let asLang = function Lang l -> l | _ -> failwith "not a lang"
-let asChar = function LitC c -> c | _ -> failwith "not a char"
-let asList = function LangList l -> l | e -> failwith "not a list"
-let asInt = function LitI i -> i | _ -> failwith "not an int"
-
+(*
 let readLangs = ref [];;
 let readLimit = ref 0;;
-
+*)
 let readin = fun () ->
 	try
 		let rec readinner (inlist: lang list) =
@@ -103,10 +104,10 @@ let readin = fun () ->
 	with
 		End_of_file -> None;;
 
-let read = match readin() with
+(*let read = match readin() with
 	| Input (l,i) -> readLangs := l; readLimit := i
 	| _ -> failwith "problem reading input";;
-
+*)
 exception Stuck
 
 let rec eval_helper func_env arg_env term = 
@@ -126,10 +127,26 @@ let rec eval_helper func_env arg_env term =
 	in (match (lEval) with
 		| (Lang l') -> (l')
 		| _ -> raise Stuck) in
+    let to_lang_pair_or_stuck(l1,l2) =
+	let l1Eval = eval_helper func_env arg_env l1
+	and l2Eval = eval_helper func_env arg_env l2
+	in (match (l1Eval, l2Eval) with
+		| (Lang l1', Lang l2') -> (l1', l2')
+		| _ -> raise Stuck) in
     let to_langlist_or_stuck(l) =
 	let lEval = eval_helper func_env arg_env l
 	in (match (lEval) with
 		| (LangList l') -> (l')
+		| _ -> raise Stuck) in
+    let to_char_or_stuck(c) =
+	let cEval = eval_helper func_env arg_env c
+	in (match cEval with
+		| (LitC c') -> c'
+		| _ -> raise Stuck) in
+    let to_input_or_stuck(i) =
+	let iEval = eval_helper func_env arg_env i
+	in (match iEval with
+		| (Input (l,i)) -> (l,i)
 		| _ -> raise Stuck)
     in match term with
         None -> None
@@ -150,36 +167,40 @@ let rec eval_helper func_env arg_env term =
                   | _ -> raise Stuck)
 
         | (AddExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitI (x' + y')
         | (SubExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitI (x' - y')
         | (MultExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitI (x' * y')
         | (LessThanExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitB (x' < y')
         | (GreaterThanExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitB (x' > y')
         | (EqualExpr (x, y)) -> 
-            let (x', y') = to_int_or_stuck (x, y) 
+            let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitB (x' = y')
         
 	| (UnionExpr (l1, l2)) ->
-		Lang (removedupes (union (to_lang_or_stuck l1) (to_lang_or_stuck l2)))
+		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+		in Lang (removedupes (union l1' l2'))
 	| (IntersectionExpr (l1,l2)) ->
-		Lang (removedupes (intersection (asLang l1) (asLang l2)))
+		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+		in Lang (removedupes (intersection l1' l2'))
 	| (AppendExpr (l,c)) ->
-		Lang (removedupes (append (to_lang_or_stuck l) (asChar c)))
+		Lang (removedupes (append (to_lang_or_stuck l) (to_char_or_stuck c)))
 	| Read -> 
 		readin ()
-	| (InputLang) ->
-		(LangList !readLangs)  
-	| (InputLimit) ->
-		(LitI !readLimit)
+	| (InputLang r) ->
+		let (l,i) = to_input_or_stuck(r)
+		in (LangList l) 
+	| (InputLimit r) ->
+		let (l,i) = to_input_or_stuck(r)
+		in (LitI i) 
 	| (GetExpr (l,i)) ->
 		Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
@@ -209,5 +230,7 @@ let rec print_res res = match res with
    	| (LitC c) -> print_char c
 	| (Word w) -> print_string w
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}'
+	| (LangList (h::[])) -> print_res(Lang h)
 	| (LangList (h::t as l)) -> print_res (Lang h); print_newline(); print_res (LangList t)
+	| (Input (l,i)) -> print_res (LangList l); print_res (LitI i)
 	| _ -> raise NonBaseTypeResult

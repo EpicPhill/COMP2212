@@ -70,10 +70,10 @@ expr:
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
-	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
+	| expr MORETHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
-	| LANGS			{ InputLang }
-	| LIMIT 		{ InputLimit }
+	| LANGS	expr		{ InputLang $2 }
+	| LIMIT expr		{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) } 
 	| BRACEOPEN expr BRACECLOSE { $2 }
 ;
