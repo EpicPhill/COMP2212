@@ -12,12 +12,16 @@ type expr =
 	| LitC of char
 	| Word of word
 	| Lang of lang
-	(* maybe? *)
+	(* maybe? possibly change to expr lists to make things more generic but that might break, and we don't (yet) need lists of anything else *)
 	| LangList of lang list
 	| Input of lang list * int
 	| InputLang of expr 
 	| InputLimit of expr
 	| GetExpr of expr * expr
+
+	| ConsExpr of expr * expr
+	| LengthExpr of expr 
+	| ContainsExpr of expr * expr
 	(* exprs to chain operations? *)
 	| AddExpr of expr * expr
 	| SubExpr of expr * expr
@@ -33,6 +37,7 @@ type expr =
 	| AppExpr of expr * expr
 	(*something like this, might not need it*)
 	| ForEach of string * string * typeExpr * expr
+	| Return of expr
 	| Read 
 
 let contains (l:lang) (w:word) = List.exists (fun e -> e = w) l;;

@@ -37,7 +37,8 @@ let char_from_string s = s.[1];;
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
-%token LANGS LIMIT GET GETINPUTLANG
+%token LANGS LIMIT
+%token GET LENGTH CONS CONTAINS	
 %token UNION INTERSECT APPEND
 %token EOL EOF
 %left APPEND
@@ -75,6 +76,9 @@ expr:
 	| LANGS	expr		{ InputLang $2 }
 	| LIMIT expr		{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) } 
+	| expr LENGTH		{ LengthExpr $1 }
+	| expr CONTAINS expr	{ ContainsExpr ($1,$3) }
+	| expr CONS expr 	{ ConsExpr ($1,$3) }
 	| BRACEOPEN expr BRACECLOSE { $2 }
 ;
 language:

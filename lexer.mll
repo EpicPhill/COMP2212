@@ -23,6 +23,9 @@ rule main = parse
 	| "limit" { LIMIT }
 	| "langs" { LANGS }
 	| "get" { GET }
+	| "length" { LENGTH }
+	| "contains" { CONTAINS }
+	| '@' { CONS }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }
