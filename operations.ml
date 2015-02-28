@@ -34,7 +34,12 @@ let rec add_char_to_last l c = match l with
 	| [] -> []
 	| e :: [] -> [e^makestring c]
 	| h :: t -> h::add_char_to_last t c;;
-let get_random_word l = List.nth l (Random.int (List.length l));;
+let get_random_element l = List.nth l (Random.int (List.length l));;
+let rec pow x y = match (x,y) with
+	| (_,0) 
+	| (1,_) -> 1
+	| (_,1) -> x
+	| (x,y) -> x*(pow x (y-1));;
 let convertlang l = 
 	let rec converthelper (stringlist: char list) combo = match stringlist with
 		| [] | _::[] -> combo
@@ -59,6 +64,16 @@ let prettyprint = function
 let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
 	| (_,0) -> reverse l
 	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;
+let rec newword (cl:lang) (wl:int) = match wl with
+	| 0 -> ""
+	| _ -> get_random_element cl ^ newword cl (wl-1);;
+let conswords (cl:lang) (wl:int) = 
+	let rec conwordinner (combo:lang) (length:int) =
+		if (List.length combo == length) then combo else let nw = newword cl wl in if (List.mem nw combo) then conwordinner combo length else conwordinner (nw::combo) length in
+	order (conwordinner [] (pow (List.length cl) wl));; 	
+let rec concat_multi (l1:lang) (l2:lang) (i:int) = match (l1,l2,i) with
+	| (_,_,0) -> []
+	| (h1::t1,h2::t2,_) -> (h1^h2)::(concat_multi l1 t2 (i-1));;
 let readin = fun () ->
 	try
 		let rec read langlist =
