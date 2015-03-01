@@ -39,7 +39,8 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
-%token LANGS LIMIT
+%token LANGSFROM LIMITFROM 
+%token CONCAT LIMIT
 %token GET LENGTH CONS CONTAINS	
 %token WORDLENGTH
 %token UNION INTERSECT APPEND
@@ -75,10 +76,11 @@ expr:
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
+	| expr CONCAT expr LIMIT expr	{ ConcatExpr ($1,$3,$5) }
 	| expr MORETHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
-	| LANGS	expr		{ InputLang $2 }
-	| LIMIT expr		{ InputLimit $2 }
+	| LANGSFROM expr		{ InputLang $2 }
+	| LIMITFROM expr		{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) } 
 	| expr LENGTH		{ LengthExpr $1 }
 	| expr CONTAINS expr	{ ContainsExpr ($1,$3) }

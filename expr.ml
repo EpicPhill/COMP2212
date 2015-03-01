@@ -22,6 +22,7 @@ type expr =
 	| ConsExpr of expr * expr
 	| LengthExpr of expr 
 	| ContainsExpr of expr * expr
+	| ConcatExpr of expr * expr * expr
 	(* exprs to chain operations? *)
 	| AddExpr of expr * expr
 	| SubExpr of expr * expr
@@ -93,7 +94,7 @@ let rec pow x y = match (x,y) with
 	| (1,_) -> 1
 	| (_,1) -> x
 	| (x,y) -> x*(pow x (y-1));;
-let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
+let rec concat_single (l:lang) (c:char) (i:int) = match (l,i) with
 	| (_,0) -> reverse l
 	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;
 let rec newword (cl:lang) (wl:int) = match wl with
@@ -249,14 +250,19 @@ let rec eval_helper func_env arg_env term =
 		in Lang (removedupes (intersection l1' l2'))
 	| (AppendExpr (l,c)) ->
 		Lang (removedupes (append (to_lang_or_stuck l) (to_char_or_stuck c)))
+	| (ConcatExpr (l1,l2,i)) ->
+		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+		and i' = to_int_or_stuck i
+		in if ((List.length l2') > 1) then Lang (concat_multi l1' l2' i') 
+			else Lang (concat_single l1' (List.nth l2' 0).[0] i')
 	| Read -> 
 		readin ()
 	| (ConsExpr (l1,l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')
 	| (AndLangsExpr (l1,l2)) ->
-		let el1 = to_expr_or_stuck(l1) in
-		let el2 = to_expr_or_stuck(l2) in
+		let el1 = to_expr_or_stuck(l1)
+		and el2 = to_expr_or_stuck(l2) in
 		(match (el1,el2) with
 			| (Word w,Lang l) -> Lang (w::l)
 			| (Lang l1,Lang l2) -> LangList (l1::l2::[])
@@ -270,7 +276,12 @@ let rec eval_helper func_env arg_env term =
 		let (l,i) = to_input_or_stuck(r)
 		in (LitI i) 
 	| (GetExpr (l,i)) ->
-		Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))
+		let i' = to_int_or_stuck i
+		and el = to_expr_or_stuck l in
+		(match el with
+			| (Lang l) -> Word (List.nth l i')
+			| (LangList l) -> Lang (List.nth l i'))
+		(*Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))*)
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) -> 

@@ -19,10 +19,12 @@ rule main = parse
 	| "let" { LET }
 	| "in" { IN }
 	| "append" { APPEND }
+	| "concat" { CONCAT }
+	| "limit" { LIMIT }
 	| '<' {LESSTHAN }
 	| '>' {MORETHAN }
-	| "limit" { LIMIT }
-	| "langs" { LANGS }
+	| "limitfrom" { LIMITFROM }
+	| "langsfrom" { LANGSFROM }
 	| "get" { GET }
 	| "wordlength" { WORDLENGTH }
 	| "length" { LENGTH }
