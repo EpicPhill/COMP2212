@@ -23,8 +23,10 @@ rule main = parse
 	| "limit" { LIMIT }
 	| "langs" { LANGS }
 	| "get" { GET }
+	| "wordlength" { WORDLENGTH }
 	| "length" { LENGTH }
 	| "contains" { CONTAINS }
+	| "printlist" { PRINTLIST }
 	| '@' { CONS }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  

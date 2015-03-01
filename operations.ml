@@ -34,12 +34,6 @@ let rec add_char_to_last l c = match l with
 	| [] -> []
 	| e :: [] -> [e^makestring c]
 	| h :: t -> h::add_char_to_last t c;;
-let get_random_element l = List.nth l (Random.int (List.length l));;
-let rec pow x y = match (x,y) with
-	| (_,0) 
-	| (1,_) -> 1
-	| (_,1) -> x
-	| (x,y) -> x*(pow x (y-1));;
 let convertlang l = 
 	let rec converthelper (stringlist: char list) combo = match stringlist with
 		| [] | _::[] -> combo
@@ -61,6 +55,12 @@ let rec print_list_nicely = function
 let prettyprint = function
 	| (LitI i) -> print_int i
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
+let get_random_element l = List.nth l (Random.int (List.length l));;
+let rec pow x y = match (x,y) with
+	| (_,0) 
+	| (1,_) -> 1
+	| (_,1) -> x
+	| (x,y) -> x*(pow x (y-1));;
 let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
 	| (_,0) -> reverse l
 	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;

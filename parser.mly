@@ -39,8 +39,9 @@ let char_from_string s = s.[1];;
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
 %token LANGS LIMIT
 %token GET LENGTH CONS CONTAINS	
+%token WORDLENGTH
 %token UNION INTERSECT APPEND
-%token EOL EOF
+%token PRINTLIST EOL EOF
 %left APPEND
 %left UNION INTERSECT
 %start main
@@ -80,8 +81,12 @@ expr:
 	| expr CONTAINS expr	{ ContainsExpr ($1,$3) }
 	| expr CONS expr 	{ ConsExpr ($1,$3) }
 	| BRACEOPEN expr BRACECLOSE { $2 }
+	| expr WORDLENGTH expr  { WordLengthExpr ($1,$3) }
+	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
+	| PRINTLIST expr 		{ PrintListExpr $2 }
 ;
 language:
+	| CURLYOPEN CURLYCLOSE {[]}
 	| CURLYOPEN languagelist CURLYCLOSE { $2 }
 ;
 languagelist:

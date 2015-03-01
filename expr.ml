@@ -18,7 +18,7 @@ type expr =
 	| InputLang of expr 
 	| InputLimit of expr
 	| GetExpr of expr * expr
-
+	| WordLengthExpr of expr * expr
 	| ConsExpr of expr * expr
 	| LengthExpr of expr 
 	| ContainsExpr of expr * expr
@@ -35,13 +35,18 @@ type expr =
 	| AppendExpr of expr * expr
 	| Function of string * string * typeExpr * typeExpr * expr * expr
 	| AppExpr of expr * expr
+	| AndLangsExpr of expr * expr
 	(*something like this, might not need it*)
 	| ForEach of string * string * typeExpr * expr
-	| Return of expr
+	| PrintListExpr of expr
 	| Read 
 
 let contains (l:lang) (w:word) = List.exists (fun e -> e = w) l;;
-
+let order (l:lang) = List.sort compare l;;
+let reverse (l:lang) = List.rev l;;
+let rec removedupes l:lang = match (order l) with
+    	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
+    	| smaller -> smaller;;
 let rec union (l1:lang) (l2:lang) = match l1 with
 	| [] -> l2
 	| h::t -> if contains l2 h then union t l2 else union t (h::l2);;
@@ -51,11 +56,6 @@ let rec intersection (l1:lang) (l2:lang) = match l1 with
 let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
-
-let order (l:lang) = List.sort compare l;;
-let rec removedupes l:lang = match (order l) with
-    	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
-    	| smaller -> smaller;;
 let explode s = 
 	let rec explodehelper curr exploded =
 		if curr < 0 then exploded else 
@@ -87,6 +87,25 @@ let rec print_list_nicely = function
 let prettyprint = function
 	| (LitI i) -> print_int i
 	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
+let get_random_element l = List.nth l (Random.int (List.length l));;
+let rec pow x y = match (x,y) with
+	| (_,0) 
+	| (1,_) -> 1
+	| (_,1) -> x
+	| (x,y) -> x*(pow x (y-1));;
+let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
+	| (_,0) -> reverse l
+	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;
+let rec newword (cl:lang) (wl:int) = match wl with
+	| 0 -> ""
+	| _ -> get_random_element cl ^ newword cl (wl-1);;
+let conswords (cl:lang) (wl:int) = 
+	let rec conwordinner (combo:lang) (length:int) =
+		if (List.length combo == length) then combo else let nw = newword cl wl in if (List.mem nw combo) then conwordinner combo length else conwordinner (nw::combo) length in
+	order (conwordinner [] (pow (List.length cl) wl));; 	
+let rec concat_multi (l1:lang) (l2:lang) (i:int) = match (l1,l2,i) with
+	| (_,_,0) -> []
+	| (h1::t1,h2::t2,_) -> (h1^h2)::(concat_multi l1 t2 (i-1));;
 
 let rec lookup env v = match env with 
     | [] -> failwith ("cannot find var: " ^ v)
@@ -113,6 +132,26 @@ let readin = fun () ->
 	| Input (l,i) -> readLangs := l; readLimit := i
 	| _ -> failwith "problem reading input";;
 *)
+
+let rec print_list_nicely = function
+	| [] -> () 
+	| h::[] -> print_string h
+	| h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
+
+exception NonBaseTypeResult
+
+let rec print_res res = match res with
+	| None | (LangList ([])) -> ()
+	| (LitI i) -> print_int i
+	| (LitB b) -> print_string (if b then "true" else "false")
+   	| (LitC c) -> print_char c
+	| (Word w) -> print_string w
+	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}'
+	| (LangList (h::[])) -> print_res(Lang h)
+	| (LangList (h::t as l)) -> print_res (Lang h); print_newline(); print_res (LangList t)
+	| (Input (l,i)) -> print_res (LangList l); print_res (LitI i)
+	| _ -> raise NonBaseTypeResult
+
 exception Stuck
 
 let rec eval_helper func_env arg_env term = 
@@ -152,6 +191,17 @@ let rec eval_helper func_env arg_env term =
 	let iEval = eval_helper func_env arg_env i
 	in (match iEval with
 		| (Input (l,i)) -> (l,i)
+		| _ -> raise Stuck) in
+    let to_word_or_stuck(w) =
+	let wEval = eval_helper func_env arg_env w
+	in (match wEval with
+		| (Word w') -> w'
+		| _ -> raise Stuck) in
+    let to_lang_or_langlist(l) =
+	let lEval = eval_helper func_env arg_env l
+	in (match lEval with
+		| (Lang l') -> Lang l'
+		| (LangList l') -> LangList l'
 		| _ -> raise Stuck)
     in match term with
         None -> None
@@ -189,7 +239,7 @@ let rec eval_helper func_env arg_env term =
         | (EqualExpr (x, y)) -> 
             let (x', y') = to_int_pair_or_stuck (x, y) 
             in LitB (x' = y')
-        
+	    
 	| (UnionExpr (l1, l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (removedupes (union l1' l2'))
@@ -200,6 +250,17 @@ let rec eval_helper func_env arg_env term =
 		Lang (removedupes (append (to_lang_or_stuck l) (to_char_or_stuck c)))
 	| Read -> 
 		readin ()
+	| (ConsExpr (l1,l2)) ->
+		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+		in Lang (l1'@l2')
+	| (AndLangsExpr (l1,l2)) ->
+		let l1' = to_lang_or_stuck(l1) in
+		let el2 = to_lang_or_langlist(l2) in
+		(match el2 with
+			| (Lang l) -> LangList (l1'::l::[])
+			| (LangList l) -> LangList (l1'::l))
+	| (PrintListExpr l) ->
+		print_res (Lang (to_lang_or_stuck l)); None
 	| (InputLang r) ->
 		let (l,i) = to_input_or_stuck(r)
 		in (LangList l) 
@@ -221,21 +282,3 @@ let rec eval_helper func_env arg_env term =
 
 let eval term = eval_helper [] [] term ;;
 
-let rec print_list_nicely = function
-	| [] -> () 
-	| h::[] -> print_string h
-	| h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
-
-exception NonBaseTypeResult
-
-let rec print_res res = match res with
-	| None | (LangList ([])) -> ()
-	| (LitI i) -> print_int i
-	| (LitB b) -> print_string (if b then "true" else "false")
-   	| (LitC c) -> print_char c
-	| (Word w) -> print_string w
-	| (Lang l) -> print_char '{'; print_list_nicely l; print_char '}'
-	| (LangList (h::[])) -> print_res(Lang h)
-	| (LangList (h::t as l)) -> print_res (Lang h); print_newline(); print_res (LangList t)
-	| (Input (l,i)) -> print_res (LangList l); print_res (LitI i)
-	| _ -> raise NonBaseTypeResult
