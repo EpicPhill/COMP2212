@@ -25,11 +25,13 @@ let explode s =
 			explodehelper (curr-1) (s.[curr] :: exploded) in
 	explodehelper (String.length s -1) [];;
 let char_from_string s = s.[1];;
+let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %}
 %token <string> STRING
 %token <string list> LANG
 %token <int> INT
 %token <string> CHAR
+%token <string> WORD
 %token READ LET IN
 %token QUOTE
 %token LESSTHAN MORETHAN
@@ -64,6 +66,7 @@ type_spec:
 expr:
 	| INT			{ LitI $1 }
 	| character		{ LitC $1 }
+	| word 			{ Word $1 }
 	| STRING		{ Var $1 }
 	| language		{ Lang $1 }
 	| LET STRING BRACEOPEN STRING COLON type_spec BRACECLOSE type_spec EQUALS expr IN expr 	{ Function ($2,$4,$6,$8,$10,$12) }
@@ -95,3 +98,7 @@ languagelist:
 ;
 character:
 	| CHAR 		{ (char_from_string $1) } 
+;
+word:
+	| WORD		{ (word_from_string $1) }
+;

@@ -1,5 +1,5 @@
 
-type typeExpr = LangTy | BTy | ITy | CTy | ResultTy | LangListTy
+type typeExpr = WTy | LangTy | BTy | ITy | CTy | ResultTy | LangListTy
 
 type word = string
 type lang = string list
@@ -197,11 +197,12 @@ let rec eval_helper func_env arg_env term =
 	in (match wEval with
 		| (Word w') -> w'
 		| _ -> raise Stuck) in
-    let to_lang_or_langlist(l) =
-	let lEval = eval_helper func_env arg_env l
-	in (match lEval with
-		| (Lang l') -> Lang l'
-		| (LangList l') -> LangList l'
+    let to_expr_or_stuck(e) =
+	let eEval = eval_helper func_env arg_env e
+	in (match eEval with
+		| (Lang l) -> Lang l
+		| (LangList l) -> LangList l
+		| (Word w) -> Word w
 		| _ -> raise Stuck)
     in match term with
         None -> None
@@ -254,11 +255,12 @@ let rec eval_helper func_env arg_env term =
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')
 	| (AndLangsExpr (l1,l2)) ->
-		let l1' = to_lang_or_stuck(l1) in
-		let el2 = to_lang_or_langlist(l2) in
-		(match el2 with
-			| (Lang l) -> LangList (l1'::l::[])
-			| (LangList l) -> LangList (l1'::l))
+		let el1 = to_expr_or_stuck(l1) in
+		let el2 = to_expr_or_stuck(l2) in
+		(match (el1,el2) with
+			| (Word w,Lang l) -> Lang (w::l)
+			| (Lang l1,Lang l2) -> LangList (l1::l2::[])
+			| (Lang l,LangList ll) -> LangList (l::ll))
 	| (PrintListExpr l) ->
 		print_res (Lang (to_lang_or_stuck l)); None
 	| (InputLang r) ->

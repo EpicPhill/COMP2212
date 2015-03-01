@@ -7,6 +7,7 @@ rule main = parse
 	| [' ' '\t' '\n'] { main lexbuf }
 	| ['0'-'9']+ as lxm { INT(int_of_string lxm) }
 	| '''['a'-'z']''' as lxm { CHAR(lxm) }
+	| '''['a'-'z']+''' as lxm { WORD(lxm) }
 	| 'U' { UNION }
 	| 'N' { INTERSECT }
 	| "int" { ITYPE }
