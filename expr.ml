@@ -35,7 +35,7 @@ type expr =
     | IntersectionExpr of expr * expr
     | AppendExpr of expr * expr
     | Function of string * string * typeExpr * typeExpr * expr * expr
-    | VarExpr of string * typeExpr * expr
+    | VarExpr of typeExpr * string *  expr * expr
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
     (*something like this, might not need it*)
@@ -84,10 +84,11 @@ let readin = fun () ->
 		in readinner []
 	with
 		End_of_file -> None;;
-
+(*
 module VarMap = Map.Make(String);;
-let varmappings = VarMap.empty;;
-
+let varmappings = ref VarMap.empty;;
+let storevar s e = varmappings := VarMap.add s e !varmappings;;
+*)
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
     | (vname, vvalue) :: rest -> if v = vname
@@ -98,10 +99,10 @@ exception Stuck
 
 let rec eval_helper func_env arg_env term =
     let to_int_or_stuck(i) =
-	let iEval = eval_helper func_env arg_env i
-	in (match (iEval) with
-		| (LitI i') -> (i')
-		| _ -> raise Stuck) in
+        let iEval = eval_helper func_env arg_env i
+            in (match (iEval) with
+                | (LitI i') -> (i')
+	   | _ -> raise Stuck) in
     let to_int_pair_or_stuck(x, y) =
         let xEval = eval_helper func_env arg_env x
         and yEval = eval_helper func_env arg_env y
@@ -139,6 +140,11 @@ let rec eval_helper func_env arg_env term =
 	in (match wEval with
 		| (Word w') -> w'
 		| _ -> raise Stuck) in
+    let to_string_or_stuck(s) =
+            let sEval = eval_helper func_env arg_env s
+            in (match sEval with
+                            | (Var v) -> v
+                            | _ -> raise Stuck) in
     let to_expr_or_stuck(e) =
 	let eEval = eval_helper func_env arg_env e
 	in (match eEval with
@@ -184,7 +190,7 @@ let rec eval_helper func_env arg_env term =
             let (x', y') = to_int_pair_or_stuck (x, y)
             in LitB (x' = y')
 
-	| (UnionExpr (l1, l2)) ->
+        | (UnionExpr (l1, l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (removedupes (union l1' l2'))
 	| (IntersectionExpr (l1,l2)) ->
@@ -229,7 +235,9 @@ let rec eval_helper func_env arg_env term =
 		(match el with
 			| (Lang l) -> Word (List.nth l i')
 			| (LangList l) -> Lang (List.nth l i'))
-	(* These typre are useless....*)
+	(*| VarExpr (argTy,name,body,inExpr) ->
+                            eval_helper ((name, body) :: func_env) arg_env inExpr*)
+              (* These typre are useless....*)
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) ->
@@ -242,4 +250,3 @@ let rec eval_helper func_env arg_env term =
                 | _ -> raise Stuck)
 
 let eval term = eval_helper [] [] term ;;
-
