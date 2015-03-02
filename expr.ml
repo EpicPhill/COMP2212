@@ -23,6 +23,7 @@ type expr =
 	| LengthExpr of expr 
 	| ContainsExpr of expr * expr
 	| ConcatExpr of expr * expr * expr
+	| TrimExpr of expr * expr
 	(* exprs to chain operations? *)
 	| AddExpr of expr * expr
 	| SubExpr of expr * expr
@@ -45,6 +46,10 @@ type expr =
 let contains (l:lang) (w:word) = List.exists (fun e -> e = w) l;;
 let order (l:lang) = List.sort compare l;;
 let reverse (l:lang) = List.rev l;;
+let rec trim (l:lang) (i:int) = if i>=List.length l then l else 
+	(match i with
+		| 0 -> []
+		| _ -> List.hd l :: trim (List.tl l) (i-1));;
 let rec removedupes l:lang = match (order l) with
     	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
     	| smaller -> smaller;;
@@ -136,6 +141,7 @@ let readin = fun () ->
 
 let rec print_list_nicely = function
 	| [] -> () 
+	| ""::t -> print_list_nicely t
 	| h::[] -> print_string h
 	| h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
 
@@ -204,6 +210,7 @@ let rec eval_helper func_env arg_env term =
 		| (Lang l) -> Lang l
 		| (LangList l) -> LangList l
 		| (Word w) -> Word w
+		| (LitC c) -> LitC c
 		| _ -> raise Stuck)
     in match term with
         None -> None
@@ -255,6 +262,8 @@ let rec eval_helper func_env arg_env term =
 		and i' = to_int_or_stuck i
 		in if ((List.length l2') > 1) then Lang (concat_multi l1' l2' i') 
 			else Lang (concat_single l1' (List.nth l2' 0).[0] i')
+	| (TrimExpr (l,i)) ->
+		Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
 	| Read -> 
 		readin ()
 	| (ConsExpr (l1,l2)) ->

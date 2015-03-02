@@ -40,7 +40,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token COMMA COLON EQUALS
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
 %token LANGSFROM LIMITFROM 
-%token CONCAT LIMIT
+%token CONCAT LIMIT TRIM
 %token GET LENGTH CONS CONTAINS	
 %token WORDLENGTH
 %token UNION INTERSECT APPEND
@@ -88,14 +88,17 @@ expr:
 	| BRACEOPEN expr BRACECLOSE { $2 }
 	| expr WORDLENGTH expr  { WordLengthExpr ($1,$3) }
 	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
+	| expr TRIM expr		{ TrimExpr ($1, $3) }
 	| PRINTLIST expr 		{ PrintListExpr $2 }
 ;
 language:
-	| CURLYOPEN CURLYCLOSE {[]}
+	| CURLYOPEN CURLYCLOSE			{[]}
 	| CURLYOPEN languagelist CURLYCLOSE { $2 }
 ;
 languagelist:
+	| COLON COMMA languagelist	{ [""]@$3 }
 	| STRING COMMA languagelist	{ [$1]@$3 }
+	| COLON				{ [""] }
 	| STRING			{ [$1] }
 ;
 character:

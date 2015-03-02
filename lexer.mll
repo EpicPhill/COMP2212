@@ -21,6 +21,7 @@ rule main = parse
 	| "append" { APPEND }
 	| "concat" { CONCAT }
 	| "limit" { LIMIT }
+	| "trimto" { TRIM }
 	| '<' {LESSTHAN }
 	| '>' {MORETHAN }
 	| "limitfrom" { LIMITFROM }
