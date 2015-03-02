@@ -1,12 +1,11 @@
-operations.cmi :
 parser.cmi : expr.cmo
-expr.cmo :
-expr.cmx :
+expr.cmo : operations.cmo
+expr.cmx : operations.cmx
 lexer.cmo : parser.cmi
 lexer.cmx : parser.cmx
 main.cmo : parser.cmi lexer.cmo expr.cmo
 main.cmx : parser.cmx lexer.cmx expr.cmx
-operations.cmo : operations.cmi
-operations.cmx : operations.cmi
+operations.cmo :
+operations.cmx :
 parser.cmo : expr.cmo parser.cmi
 parser.cmx : expr.cmx parser.cmi

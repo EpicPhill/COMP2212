@@ -3,6 +3,7 @@
 *.cmo
 *.output
 *.ol
-cw
+*.spl
+mysplinterpreter
 parser.ml*
 lexer.ml
