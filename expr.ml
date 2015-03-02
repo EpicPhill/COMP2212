@@ -5,43 +5,44 @@ type word = string
 type lang = string list
 
 type expr =
-	None
-	| Var of string
-	| LitB of bool
-	| LitI of int
-	| LitC of char
-	| Word of word
-	| Lang of lang
-	(* maybe? possibly change to expr lists to make things more generic but that might break, and we don't (yet) need lists of anything else *)
-	| LangList of lang list
-	| Input of lang list * int
-	| InputLang of expr
-	| InputLimit of expr
-	| GetExpr of expr * expr
-	| WordLengthExpr of expr * expr
-	| ConsExpr of expr * expr
-	| LengthExpr of expr
-	| ContainsExpr of expr * expr
-	| ConcatExpr of expr * expr * expr
-	| TrimExpr of expr * expr
-	(* exprs to chain operations? *)
-	| AddExpr of expr * expr
-	| SubExpr of expr * expr
-	| MultExpr of expr * expr
-	| EqualExpr of expr * expr
-	| GreaterThanExpr of expr * expr
-	| LessThanExpr of expr * expr
-	| ConditionalExpr of expr * expr * expr
-	| UnionExpr of expr * expr
-	| IntersectionExpr of expr * expr
-	| AppendExpr of expr * expr
-	| Function of string * string * typeExpr * typeExpr * expr * expr
-	| AppExpr of expr * expr
-	| AndLangsExpr of expr * expr
-	(*something like this, might not need it*)
-	| ForEach of string * string * typeExpr * expr
-	| PrintListExpr of expr
-	| Read
+    None
+    | Var of string
+    | LitB of bool
+    | LitI of int
+    | LitC of char
+    | Word of word
+    | Lang of lang
+    (* maybe? possibly change to expr lists to make things more generic but that might break, and we don't (yet) need lists of anything else *)
+    | LangList of lang list
+    | Input of lang list * int
+    | InputLang of expr
+    | InputLimit of expr
+    | GetExpr of expr * expr
+    | WordLengthExpr of expr * expr
+    | ConsExpr of expr * expr
+    | LengthExpr of expr
+    | ContainsExpr of expr * expr
+    | ConcatExpr of expr * expr * expr
+    | TrimExpr of expr * expr
+    (* exprs to chain operations? *)
+    | AddExpr of expr * expr
+    | SubExpr of expr * expr
+    | MultExpr of expr * expr
+    | EqualExpr of expr * expr
+    | GreaterThanExpr of expr * expr
+    | LessThanExpr of expr * expr
+    | ConditionalExpr of expr * expr * expr
+    | UnionExpr of expr * expr
+    | IntersectionExpr of expr * expr
+    | AppendExpr of expr * expr
+    | Function of string * string * typeExpr * typeExpr * expr * expr
+    | VarExpr of string * typeExpr * expr
+    | AppExpr of expr * expr
+    | AndLangsExpr of expr * expr
+    (*something like this, might not need it*)
+    | ForEach of string * string * typeExpr * expr
+    | PrintListExpr of expr
+    | Read
 
 let processline line =
     if (line.[0] = '{') then
@@ -84,6 +85,12 @@ let readin = fun () ->
 		in readinner []
 	with
 		End_of_file -> None;;
+
+module VarMap = Map.Make(String);;
+let varmappings = VarMap.empty;;
+
+let rec storevar s e =
+        let varmappings = VarMap.add s e varmappings;;
 
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
@@ -224,7 +231,7 @@ let rec eval_helper func_env arg_env term =
 		(match el with
 			| (Lang l) -> Word (List.nth l i')
 			| (LangList l) -> Lang (List.nth l i'))
-		(*Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))*)
+	(* These typre are useless....*)
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) ->
