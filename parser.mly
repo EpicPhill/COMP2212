@@ -34,7 +34,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token <string> WORD
 %token READ LET IN
 %token QUOTE
-%token LESSTHAN MORETHAN
+%token LESSTHAN GREATERTHAN
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
@@ -93,12 +93,12 @@ expr:
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
 	| expr CONCAT expr LIMIT expr	{ ConcatExpr ($1,$3,$5) }
-	| expr MORETHAN expr { GreaterThanExpr ($1,$3) }
+	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
-	| expr HEAD expr { HeadExpr ($1) }
-	| expr TAIL expr { TailExpr ($1) }
-	| LANGS			{ InputLang }
-	| LIMIT 		{ InputLimit }
+	/*| expr HEAD expr { HeadExpr ($1) }
+	| expr TAIL expr { TailExpr ($1) }*/
+	| LANGS expr			{ InputLang $2 }
+	| LIMIT 	expr			{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) }
 	| LANGSFROM expr		{ InputLang $2 }
 	| LIMITFROM expr		{ InputLimit $2 }

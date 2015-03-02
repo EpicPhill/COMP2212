@@ -34,7 +34,7 @@ rule main = parse
 	| "contains" { CONTAINS }
 	| "printlist" { PRINTLIST }
 	| '<' {LESSTHAN }
-	| '>' {MORETHAN }
+	| '>' {GREATERTHAN }
 	| '@' { CONS }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }
