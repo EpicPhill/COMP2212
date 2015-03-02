@@ -1,4 +1,3 @@
-
 type typeExpr = LangTy | BTy | ITy | CTy | ResultTy | LangListTy
 
 type word = string
@@ -180,6 +179,8 @@ let rec eval_helper func_env arg_env term =
 		(LangList !readLangs)  
 	| (InputLimit) ->
 		(LitI !readLimit)
+	| (HeadExpr (l)) ->
+		Lang (List.hd l)
 	| (GetExpr (l,i)) ->
 		Lang (List.nth (to_langlist_or_stuck l) (to_int_or_stuck i))
 	| Function (name, argName, argTy, resTy, body, inExpr) ->

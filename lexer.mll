@@ -19,10 +19,12 @@ rule main = parse
 	| "in" { IN }
 	| "append" { APPEND }
 	| '<' {LESSTHAN }
-	| '>' {MORETHAN }
+	| '>' {GREATERTHAN }
 	| "limit" { LIMIT }
 	| "langs" { LANGS }
 	| "get" { GET }
+	| "head" { HEAD }
+	| "tail" { TAIL }
 	| '}' { CURLYCLOSE }
 	| ',' { COMMA }  
 	| '{' { CURLYOPEN }

@@ -37,7 +37,7 @@ let char_from_string s = s.[1];;
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
-%token LANGS LIMIT GET GETINPUTLANG
+%token LANGS LIMIT GET GETINPUTLANG TAIL HEAD
 %token UNION INTERSECT APPEND
 %token EOL EOF
 %left APPEND
@@ -72,6 +72,8 @@ expr:
 	| expr APPEND expr	{ AppendExpr ($1,$3) }
 	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
+	| expr HEAD expr { HeadExpr ($1) }
+	| expr TAIL expr { TailExpr ($1) }
 	| LANGS			{ InputLang }
 	| LIMIT 		{ InputLimit }
 	| expr GET expr		{ GetExpr ($1,$3) } 
