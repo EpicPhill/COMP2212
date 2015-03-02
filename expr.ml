@@ -1,6 +1,5 @@
 open Operations
 type typeExpr = WTy | LangTy | BTy | ITy | CTy | ResultTy | LangListTy
-
 type word = string
 type lang = string list
 
@@ -205,6 +204,12 @@ let rec eval_helper func_env arg_env term =
 		Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
 	| Read ->
 		readin ()
+	| (InputLang) ->
+		(LangList !readLangs)  
+	| (InputLimit) ->
+		(LitI !readLimit)
+	| (HeadExpr (l)) ->
+		Lang (List.hd l)
 	| (ConsExpr (l1,l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')

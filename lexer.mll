@@ -19,12 +19,16 @@ rule main = parse
 	| "let" { LET }
 	| "in" { IN }
 	| "append" { APPEND }
+	| '<' {LESSTHAN }
+	| '>' {GREATERTHAN }
 	| "concat" { CONCAT }
 	| "limit" { LIMIT }
 	| "trimto" { TRIM }
 	| "limitfrom" { LIMITFROM }
 	| "langsfrom" { LANGSFROM }
 	| "get" { GET }
+	| "head" { HEAD }
+	| "tail" { TAIL }
 	| "wordlength" { WORDLENGTH }
 	| "length" { LENGTH }
 	| "contains" { CONTAINS }

@@ -38,11 +38,16 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
 %token COMMA COLON EQUALS
+<<<<<<< HEAD
+%token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE 
+%token LANGS LIMIT GET GETINPUTLANG TAIL HEAD
+=======
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE
 %token LANGSFROM LIMITFROM
 %token CONCAT LIMIT TRIM
 %token GET LENGTH CONS CONTAINS
 %token WORDLENGTH
+>>>>>>> d22faf558312aa81f99685fb3d80af9c72829c15
 %token UNION INTERSECT APPEND
 %token PRINTLIST EOL EOF
 %left APPEND
@@ -94,12 +99,20 @@ expr:
 	| expr CONCAT expr LIMIT expr	{ ConcatExpr ($1,$3,$5) }
 	| expr MORETHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
+<<<<<<< HEAD
+	| expr HEAD expr { HeadExpr ($1) }
+	| expr TAIL expr { TailExpr ($1) }
+	| LANGS			{ InputLang }
+	| LIMIT 		{ InputLimit }
+	| expr GET expr		{ GetExpr ($1,$3) } 
+=======
 	| LANGSFROM expr		{ InputLang $2 }
 	| LIMITFROM expr		{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) }
 	| expr LENGTH		{ LengthExpr $1 }
 	| expr CONTAINS expr	{ ContainsExpr ($1,$3) }
 	| expr CONS expr 	{ ConsExpr ($1,$3) }
+>>>>>>> d22faf558312aa81f99685fb3d80af9c72829c15
 	| BRACEOPEN expr BRACECLOSE { $2 }
 	| expr WORDLENGTH expr  { WordLengthExpr ($1,$3) }
 	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
