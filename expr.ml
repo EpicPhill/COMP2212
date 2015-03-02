@@ -210,7 +210,7 @@ let rec eval_helper func_env arg_env term =
 		readin ()
 	| (HeadExpr (l)) ->
 		let (l') = to_lang_or_stuck(l)
-		in (List.hd l) 
+		in Lang (List.hd l') 
 	| (ConsExpr (l1,l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')
