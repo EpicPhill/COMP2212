@@ -88,9 +88,6 @@ let readin = fun () ->
 module VarMap = Map.Make(String);;
 let varmappings = VarMap.empty;;
 
-let rec storevar s e =
-        let varmappings = VarMap.add s e varmappings;;
-
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
     | (vname, vvalue) :: rest -> if v = vname
@@ -204,10 +201,6 @@ let rec eval_helper func_env arg_env term =
 		Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
 	| Read ->
 		readin ()
-	| (InputLang) ->
-		(LangList !readLangs)  
-	| (InputLimit) ->
-		(LitI !readLimit)
 	| (HeadExpr (l)) ->
 		Lang (List.hd l)
 	| (ConsExpr (l1,l2)) ->
