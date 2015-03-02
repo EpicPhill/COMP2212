@@ -16,6 +16,7 @@ type expr =
     | Input of lang list * int
     | InputLang of expr
     | InputLimit of expr
+    | HeadExpr of expr 
     | GetExpr of expr * expr
     | WordLengthExpr of expr * expr
     | ConsExpr of expr * expr
