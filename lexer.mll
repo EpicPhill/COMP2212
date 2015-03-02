@@ -46,4 +46,4 @@ rule main = parse
 	| ''' { QUOTE }
 	| ';' { EOL }
 	| ['a'-'z']+ as lxm { STRING lxm }
-	| eof { EOF }
+	| eof { raise Eof }

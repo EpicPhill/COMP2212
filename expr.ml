@@ -85,16 +85,20 @@ let readin = fun () ->
 		in readinner []
 	with
 		End_of_file -> None;;
-(*
+
 module VarMap = Map.Make(String);;
 let varmappings = ref VarMap.empty;;
 let storevar s e = varmappings := VarMap.add s e !varmappings;;
-*)
+
+
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
     | (vname, vvalue) :: rest -> if v = vname
                                      then vvalue
                                      else lookup rest v
+
+let rec new_eval_helper func_env arg_env term =
+    ()
 
 exception Stuck
 
@@ -238,7 +242,7 @@ let rec eval_helper func_env arg_env term =
 			| (Lang l) -> Word (List.nth l i')
 			| (LangList l) -> Lang (List.nth l i'))
 	(*| VarExpr (argTy,name,body,inExpr) ->
-                            eval_helper ((name, body) :: func_env) arg_env inExpr*)
+        storevar name bodyi*)
               (* These typre are useless....*)
 	| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr

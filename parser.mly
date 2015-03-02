@@ -56,7 +56,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %type <char> character
 %%
 main:
-	expr EOF 		{ $1 }
+	expr EOL 		{ $1 }
 ;
 type_spec:
 	| ITYPE			{ ITy }
@@ -110,7 +110,6 @@ expr:
 	| expr WORDLENGTH expr  { WordLengthExpr ($1,$3) }
 	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
 	| expr TRIM expr		{ TrimExpr ($1, $3) }
-	| expr EOL expr 		{ $1;$3 }
 	| PRINTLIST expr 		{ PrintListExpr $2 }
 ;
 language:
