@@ -85,7 +85,7 @@ expr:
 
 
 	*/
-
+	| LET type_spec  STRING EQUALS expr IN expr { VarExpr ($2,$3,$5,$7) }
 	| LET STRING BRACEOPEN STRING COLON type_spec BRACECLOSE type_spec EQUALS expr IN expr 	{ Function ($2,$4,$6,$8,$10,$12) }
 	| READ { Read }
  	| expr BRACEOPEN expr BRACECLOSE     { AppExpr ($1, $3) }
@@ -95,8 +95,8 @@ expr:
 	| expr CONCAT expr LIMIT expr	{ ConcatExpr ($1,$3,$5) }
 	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
-	/*| expr HEAD expr { HeadExpr ($1) }
-	| expr TAIL expr { TailExpr ($1) }*/
+	| expr HEAD expr { HeadExpr ($1) }
+	/*| expr TAIL expr { TailExpr ($1) }*/
 	| LANGS expr			{ InputLang $2 }
 	| LIMIT 	expr			{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) }
