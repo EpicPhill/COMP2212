@@ -3,7 +3,7 @@
 	exception Eof
 }
 
-rule main = parse 
+rule main = parse
 	| [' ' '\t' '\n'] { main lexbuf }
 	| ['0'-'9']+ as lxm { INT(int_of_string lxm) }
 	| '''['a'-'z']''' as lxm { CHAR(lxm) }
@@ -22,8 +22,6 @@ rule main = parse
 	| "concat" { CONCAT }
 	| "limit" { LIMIT }
 	| "trimto" { TRIM }
-	| '<' {LESSTHAN }
-	| '>' {MORETHAN }
 	| "limitfrom" { LIMITFROM }
 	| "langsfrom" { LANGSFROM }
 	| "get" { GET }
@@ -31,25 +29,17 @@ rule main = parse
 	| "length" { LENGTH }
 	| "contains" { CONTAINS }
 	| "printlist" { PRINTLIST }
+	| '<' {LESSTHAN }
+	| '>' {MORETHAN }
 	| '@' { CONS }
 	| '}' { CURLYCLOSE }
-	| ',' { COMMA }  
+	| ',' { COMMA }
 	| '{' { CURLYOPEN }
 	| ')' { BRACECLOSE }
 	| '(' { BRACEOPEN }
 	| '=' { EQUALS }
 	| ':' { COLON }
 	| ''' { QUOTE }
-	| ';' { EOL }	
+	| ';' { EOL }
 	| ['a'-'z']+ as lxm { STRING lxm }
 	| eof { EOF }
-
-(* can this work?
-and words = parse 
-	| [' ' '\t' '\n'] { words lexbuf }
-	| ['a'-'z']+ as lxm { WORD lxm }
-	| '}' { main lexbuf }
-	| ',' { WORDSEP }  
-	| eof {raise Eof}
-*)
-
