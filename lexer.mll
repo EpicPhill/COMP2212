@@ -49,5 +49,5 @@ rule main = parse
 	| ':' 						{ COLON }
 	| ''' 						{ QUOTE }
 	| ';' 						{ EOL }
-	| ['a'-'z']+ as lxm 		{ STRING lxm }
+	| ['A'-'Z''a'-'z''0'-'9']+ as lxm 		{ STRING lxm }
 	| eof 						{ EOF }
