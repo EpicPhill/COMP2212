@@ -1,0 +1,15 @@
+let r = read in
+let Langs = langsfrom r in
+let Limit = limitfrom r in
+let L1 = Langs get 0 in
+let frontchar = L1 get 0 in
+let charlang = {a,b,c} wordlength 2 in
+let concatenate (ll) =
+    let L = ll get 0 in
+    let nL = ll get 1 in
+    if (length L) < 1 then nL else
+        let h = (head L) in
+        let t = (tail L) in
+        let nh = frontchar ^ h in
+        concatenate(t::(nL::nh)) in
+unique (concatenate (charlang::{}) trimto Limit)
