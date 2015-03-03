@@ -201,7 +201,7 @@ let rec eval_helper func_env arg_env term =
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		and i' = to_int_or_stuck i
 		in if ((List.length l2') > 1) then Lang (concat_multi l1' l2' i')
-			else Lang (concat_single l1' (List.nth l2' 0).[0] i')
+			else Lang (concat_single l1' (List.nth l2' 0).[0] (i'-1))
 	| (TrimExpr (l,i)) ->
 		Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
 	| Read ->
@@ -229,6 +229,11 @@ let rec eval_helper func_env arg_env term =
 	| (InputLimit r) ->
 		let (l,i) = to_input_or_stuck(r)
 		in (LitI i)
+    | (LengthExpr (l)) ->
+        let el = to_expr_or_stuck l in
+        (match el with
+            | (Lang l) -> LitI (List.length l)
+            | (LangList l) -> LitI (List.length l))
 	| (GetExpr (l,i)) ->
 		let i' = to_int_or_stuck i
 		and el = to_expr_or_stuck l in
