@@ -32,7 +32,6 @@ let rec add_char_to_last l c = match l with
 	| h :: t -> h::add_char_to_last t c;;
 let convertlang l =
 	let rec converthelper (stringlist: char list) combo = match stringlist with
-
 		| [] | _::[] -> combo
 		| a :: ('}' :: _ ) -> combo
 		| '{' :: ( e :: _ as t ) -> converthelper t [makestring e]

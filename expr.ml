@@ -20,10 +20,12 @@ type expr =
     | GetExpr of expr * expr
     | WordLengthExpr of expr * expr
     | ConsExpr of expr * expr
+    | StringConcatExpr of expr * expr
     | LengthExpr of expr
     | ContainsExpr of expr * expr
     | ConcatExpr of expr * expr * expr
     | TrimExpr of expr * expr
+    | UniqueExpr of expr
     (* exprs to chain operations? *)
     | AddExpr of expr * expr
     | SubExpr of expr * expr
@@ -180,6 +182,8 @@ let rec eval_helper func_env arg_env term =
         | (EqualExpr (x, y)) ->
             let (x', y') = to_int_pair_or_stuck (x, y)
             in LitB (x' = y')
+        | (ContainsExpr (l,w)) ->
+            LitB (List.mem (to_word_or_stuck w) (to_lang_or_stuck l))
         | (UnionExpr (l1, l2)) ->
             let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
             in Lang (removedupes (union l1' l2'))
@@ -195,22 +199,41 @@ let rec eval_helper func_env arg_env term =
             else Lang (concat_single l1' (List.nth l2' 0).[0] (i'-1))
         | (TrimExpr (l,i)) ->
             Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
+        | (UniqueExpr l) ->
+            Lang (removedupes (to_lang_or_stuck l))
         | Read ->
             readin ()
         | (HeadExpr (l)) ->
-            let (l') = to_lang_or_stuck(l)
-            in Word (List.hd l')
+            let el = to_expr_or_stuck l in
+            (match el with
+                | (Lang l) -> Word (List.hd l)
+                | (LangList l) -> Lang (List.hd l))
         | (TailExpr (l)) ->
-            let (l') = to_lang_or_stuck(l)
-            in Lang (List.tl l')
+            let el = to_expr_or_stuck l in
+            (match el with
+                | (Lang l) -> Lang (List.tl l)
+                | (LangList l) -> LangList (List.tl l))
         | (ConsExpr (l1,l2)) ->
             let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
             in Lang (l1'@l2')
+        | (StringConcatExpr (l1,l2)) ->
+            let el1 = to_expr_or_stuck(l1)
+            and el2 = to_expr_or_stuck(l2) in
+            (match (el1,el2) with
+                | (Word w1, Word w2) -> Word(w1 ^ w2)
+                | (Word w, LitC c) -> Word(w ^ makestring c)
+                | (LitC c, Word w) -> Word(makestring c ^ w)
+                | (Word w, _) -> failwith ("not a char or a string, val 2")
+                | (_, Word w) -> failwith ("not a char or a string, val 1")
+                | (_, LitC c) -> failwith ("not a char or a string, val 1")
+                | (LitC c, _) -> failwith ("not a char or a string, val 2"))
         | (AndLangsExpr (l1,l2)) ->
             let el1 = to_expr_or_stuck(l1)
             and el2 = to_expr_or_stuck(l2) in
             (match (el1,el2) with
+                | (Word w1,Word w2) -> Lang (w1::w2::[])
                 | (Word w,Lang l) -> Lang (w::l)
+                | (Lang l,Word w) -> Lang (l@[w])
                 | (Lang l1,Lang l2) -> LangList (l1::l2::[])
                 | (Lang l,LangList ll) -> LangList (l::ll))
         | (WordLengthExpr (l,i)) ->
