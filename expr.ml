@@ -35,7 +35,7 @@ type expr =
     | UnionExpr of expr * expr
     | IntersectionExpr of expr * expr
     | AppendExpr of expr * expr
-    | Function of string * string * typeExpr * typeExpr * expr * expr
+    | Function of string * string * expr * expr
     | VarExpr of typeExpr * string *  expr * expr
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
@@ -85,11 +85,7 @@ let readin = fun () ->
 		in readinner []
 	with
 		End_of_file -> None;;
-(*
-module VarMap = Map.Make(String);;
-let varmappings = ref VarMap.empty;;
-let storevar s e = varmappings := VarMap.add s e !varmappings;;
-*)
+
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
     | (vname, vvalue) :: rest -> if v = vname
@@ -240,7 +236,7 @@ let rec eval_helper func_env arg_env term =
 	(*| VarExpr (argTy,name,body,inExpr) ->
                             eval_helper ((name, body) :: func_env) arg_env inExpr*)
               (* These typre are useless....*)
-	| Function (name, argName, argTy, resTy, body, inExpr) ->
+	| Function (name, argName, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) ->
             let argEval = eval_helper func_env arg_env arg

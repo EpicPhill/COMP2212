@@ -84,9 +84,9 @@ expr:
 		| STRING COLON type_spec
 
 
-	*/
-	| LET type_spec  STRING EQUALS expr IN expr { VarExpr ($2,$3,$5,$7) }
-	| LET STRING BRACEOPEN STRING COLON type_spec BRACECLOSE type_spec EQUALS expr IN expr 	{ Function ($2,$4,$6,$8,$10,$12) }
+
+	| LET type_spec  STRING EQUALS expr IN expr { VarExpr ($2,$3,$5,$7) }*/
+	| LET STRING BRACEOPEN STRING BRACECLOSE EQUALS expr IN expr { Function ($2,$4,$7,$9)}
 	| READ { Read }
  	| expr BRACEOPEN expr BRACECLOSE     { AppExpr ($1, $3) }
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
