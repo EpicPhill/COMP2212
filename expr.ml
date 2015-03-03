@@ -35,8 +35,10 @@ type expr =
     | UnionExpr of expr * expr
     | IntersectionExpr of expr * expr
     | AppendExpr of expr * expr
+    | IfExpr of expr * expr
+    | IfElseExpr of expr * expr * expr
     | Function of string * string * expr * expr
-    | VarExpr of typeExpr * string *  expr * expr
+    | VarExpr of string *  expr * expr
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
     (*something like this, might not need it*)
@@ -233,9 +235,9 @@ let rec eval_helper func_env arg_env term =
 		(match el with
 			| (Lang l) -> Word (List.nth l i')
 			| (LangList l) -> Lang (List.nth l i'))
-	(*| VarExpr (argTy,name,body,inExpr) ->
-                            eval_helper ((name, body) :: func_env) arg_env inExpr*)
-              (* These typre are useless....*)
+	| VarExpr (name,body,inExpr) ->
+            let argEval = eval_helper func_env arg_env body in
+                eval_helper func_env ((name, argEval) :: arg_env) inExpr
 	| Function (name, argName, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) ->

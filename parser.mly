@@ -34,6 +34,8 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token <string> WORD
 %token READ LET IN
 %token QUOTE
+%token CONS STRINGCONCAT
+%token IF THEN ELSE
 %token LESSTHAN GREATERTHAN
 %token CURLYOPEN CURLYCLOSE
 %token BRACEOPEN BRACECLOSE
@@ -42,7 +44,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token ITYPE LTYPE LANGLISTTYPE CTYPE RESULTTYPE
 %token LANGSFROM LIMITFROM
 %token CONCAT LIMIT TRIM
-%token GET LENGTH CONS CONTAINS
+%token GET LENGTH CONTAINS
 %token WORDLENGTH
 %token UNION INTERSECT APPEND
 %token PRINTLIST EOL EOF
@@ -81,13 +83,14 @@ expr:
 	this might work to allow for many paramters but I dunno
 	paramlist :
 		| STRING COLON type_spec COMMA paramlist
-		| STRING COLON type_spec
+		| STRING COLON type_spec*/
 
 
 
-	| LET type_spec  STRING EQUALS expr IN expr { VarExpr ($2,$3,$5,$7) }*/
+	| LET STRING EQUALS expr IN expr { VarExpr ($2,$4,$6) }
 	| LET STRING BRACEOPEN STRING BRACECLOSE EQUALS expr IN expr { Function ($2,$4,$7,$9)}
 	| READ { Read }
+	|
  	| expr BRACEOPEN expr BRACECLOSE     { AppExpr ($1, $3) }
 	| expr UNION expr 	{ UnionExpr ($1,$3) }
 	| expr INTERSECT expr	{ IntersectionExpr ($1,$3) }
