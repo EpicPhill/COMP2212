@@ -200,11 +200,15 @@ let rec eval_helper func_env arg_env term =
 	| Read ->
 		readin ()
 	| (HeadExpr (l)) ->
-		let (l') = to_lang_or_stuck(l)
-		in Word (List.hd l')
+		let el = to_expr_or_stuck l in
+        (match el with
+            | (Lang l) -> Word (List.hd l)
+            | (LangList l) -> Word (List.hd l))
 	| (TailExpr (l)) ->
-		let (l') = to_lang_or_stuck(l)
-		in Lang (List.tl l')
+		let el = to_expr_or_stuck l in
+        (match el with
+            | (Lang l) -> Lang (List.length l)
+            | (LangList l) -> LangList (List.length l))
 	| (ConsExpr (l1,l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')
