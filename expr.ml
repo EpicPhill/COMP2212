@@ -35,8 +35,8 @@ type expr =
     | UnionExpr of expr * expr
     | IntersectionExpr of expr * expr
     | AppendExpr of expr * expr
-    | Function of string * string * typeExpr * typeExpr * expr * expr
-    | VarExpr of typeExpr * string *  expr * expr
+    | Function of string * string * typeExpr * typeExpr * expr
+    | SetVarExpr of typeExpr * string *  expr
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
     (*something like this, might not need it*)
@@ -86,10 +86,15 @@ let readin = fun () ->
 	with
 		End_of_file -> None;;
 
-module VarMap = Map.Make(String);;
-let varmappings = ref VarMap.empty;;
-let storevar s e = varmappings := VarMap.add s e !varmappings;;
+module Mapping = Map.Make(String);;
+let varmappings = ref Mapping.empty;;
+let storevar s e = varmappings := Mapping.add s e !varmappings;;
 
+let func_env = ref Mapping.empty
+let storefunc n b = func_env := Mapping.add n b !func_env
+
+let rec lookup_var v = try Mapping.find v !varmappings with Not_found -> failwith ("cannot find var: "^v)
+let rec lookup_func f = try Mapping.find f !func_env with Not_found -> failwith ("cannot find function: "^f)
 
 let rec lookup env v = match env with
     | [] -> failwith ("cannot find var: " ^ v)
@@ -98,7 +103,18 @@ let rec lookup env v = match env with
                                      else lookup rest v
 
 let rec new_eval_helper func_env arg_env term =
-    ()
+    match term with
+        | (SetVarExpr (typeExpr,name,body)) ->
+            storevar name body;
+            print_string "stored var"
+        | (Function (name, argName, argTy, resTy, body)) ->
+            storefunc name (argName,body);
+            print_string "stored func"
+        | (AppExpr (func, arg)) ->
+            match func with
+                | (Var f) ->
+                    let (argName,body) = lookup_func f in
+                        print_string "function"
 
 exception Stuck
 
@@ -244,7 +260,7 @@ let rec eval_helper func_env arg_env term =
 	(*| VarExpr (argTy,name,body,inExpr) ->
         storevar name bodyi*)
               (* These typre are useless....*)
-	| Function (name, argName, argTy, resTy, body, inExpr) ->
+	(*| Function (name, argName, argTy, resTy, body, inExpr) ->
             	eval_helper ((name, (argName, body)) :: func_env) arg_env inExpr
         | (AppExpr (func, arg)) ->
             let argEval = eval_helper func_env arg_env arg
@@ -253,6 +269,6 @@ let rec eval_helper func_env arg_env term =
                     (match lookup func_env f with
                         | (argName, body) ->
                             eval_helper func_env ((argName, argEval) :: arg_env) body)
-                | _ -> raise Stuck)
+                | _ -> raise Stuck)*)
 
-let eval term = eval_helper [] [] term ;;
+let eval term = new_eval_helper [] [] term ;;
