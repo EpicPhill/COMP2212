@@ -10,11 +10,6 @@ rule main = parse
 	| '''['a'-'z']+''' as lxm 	{ WORD(lxm) }
 	| 'U' 						{ UNION }
 	| 'N' 						{ INTERSECT }
-	| "int" 					{ ITYPE }
-	| "char" 					{ CTYPE }
-	| "result" 					{ RESULTTYPE }
-	| "langlist" 				{ LANGLISTTYPE }
-	| "lang"					{ LTYPE }
 	| "read" 					{ READ }
 	| "let" 					{ LET }
 	| "in" 						{ IN }

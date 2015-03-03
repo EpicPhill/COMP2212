@@ -1,24 +1,5 @@
 %{
 	open Expr
-(*
-let rec append (l:lang) (c:char) = match l with
-	| h::t -> (h^(String.make 1 c)) :: append t c
-	| smaller -> smaller;;
-let order (l:lang) = List.sort compare l;;
-let contains (l:lang) (w:word) = List.exists (fun e -> e = w) l;;
-let rec union (l1:lang) (l2:lang) = match l1 with
-	| [] -> l2
-	| h::t -> if contains l2 h then union t l2 else union t (h::l2);;
-let rec intersection (l1:lang) (l2:lang) = match l1 with
-	| h::t -> if contains l2 h then h :: intersection t l2 else intersection t l2
-	| smaller -> smaller;;
-let rec removedupes l:lang = match (order l) with
-    	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
-    	| smaller -> smaller;;
-*)
-	(* something to allow for letting of variables? | LET BRACEOPEN STRING COLON type_spec BRACECLOSE EQUALS expr IN expr
-	this can very likely be tighened up 		| LET BRACEOPEN BRACEOPEN STRING COLON type_spec BRACECLOSE COMMA BRACEOPEN STRING COLON type_spec BRACECLOSE BRACECLOSE EQUALS expr IN expr *)
-
 let explode s =
 	let rec explodehelper curr exploded =
 		if curr < 0 then exploded else
@@ -53,19 +34,11 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %start main
 %type <Expr.expr> main
 %type <Expr.expr> expr
-%type <Expr.typeExpr> type_spec
 %type <string list> language
 %type <char> character
 %%
 main:
 	expr EOF 		{ $1 }
-;
-type_spec:
-	| ITYPE			{ ITy }
-	| LTYPE			{ LangTy }
-	| LANGLISTTYPE		{ LangListTy }
-	| CTYPE			{ CTy }
-	| RESULTTYPE		{ ResultTy }
 ;
 expr:
 	| INT			{ LitI $1 }
@@ -73,21 +46,7 @@ expr:
 	| word 			{ Word $1 }
 	| STRING		{ Var $1 }
 	| language		{ Lang $1 }
-
-	/*
-	some new things to allow for variables and functions without instant use
-	so like "let int i = blah blah" and "let int i (x:int) = blah blah"
-	| LET type_spec STRING EQUALS { SetVarExpr($1,$3) }
-	| LET type_spec STRING BRACEOPEN STRING COLON type_spec BRACECLOSE EQUALS { Function  }
-
-	this might work to allow for many paramters but I dunno
-	paramlist :
-		| STRING COLON type_spec COMMA paramlist
-		| STRING COLON type_spec*/
-
-
-
-	| LET STRING EQUALS expr IN expr { VarExpr ($2,$4,$6) }
+	| LET STRING EQUALS expr IN expr 	{ VarExpr ($2,$4,$6) }
 	| LET STRING BRACEOPEN STRING BRACECLOSE EQUALS expr IN expr { Function ($2,$4,$7,$9)}
 	| READ { Read }
 	|
@@ -114,6 +73,7 @@ expr:
 	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
 	| expr TRIM expr		{ TrimExpr ($1, $3) }
 	| expr EOL expr 		{ $1;$3 }
+	| IF expr THEN expr ELSE expr { IfElseExpr($2,$4,$6) }
 	| PRINTLIST expr 		{ PrintListExpr $2 }
 ;
 language:

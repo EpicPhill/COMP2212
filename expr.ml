@@ -1,5 +1,4 @@
 open Operations
-type typeExpr = WTy | LangTy | BTy | ITy | CTy | ResultTy | LangListTy
 type word = string
 type lang = string list
 
@@ -31,7 +30,6 @@ type expr =
     | EqualExpr of expr * expr
     | GreaterThanExpr of expr * expr
     | LessThanExpr of expr * expr
-    | ConditionalExpr of expr * expr * expr
     | UnionExpr of expr * expr
     | IntersectionExpr of expr * expr
     | AppendExpr of expr * expr
@@ -42,7 +40,7 @@ type expr =
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
     (*something like this, might not need it*)
-    | ForEach of string * string * typeExpr * expr
+    | ForEach of string * string * expr
     | PrintListExpr of expr
     | Read
 
@@ -59,10 +57,6 @@ let rec print_list_nicely = function
     | ""::t -> print_list_nicely t
     | h::[] -> print_string h
     | h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
-
-let prettyprint = function
-    | (LitI i) -> print_int i
-    | (Lang l) -> print_char '{'; print_list_nicely l; print_char '}';;
 
 let rec print_res res = match res with
     | None | (LangList ([])) -> ()
@@ -162,8 +156,7 @@ let rec eval_helper func_env arg_env term =
         | (Lang l) -> Lang l
 	| (Input (l,i)) -> None
 	| (LangList ll) -> LangList ll
-
-	| (ConditionalExpr (cond, tExpr, fExpr)) ->
+	| (IfElseExpr (cond, tExpr, fExpr)) ->
             let condEval = eval_helper func_env arg_env cond
             in (match condEval with
                   | (LitB b) ->
@@ -188,7 +181,6 @@ let rec eval_helper func_env arg_env term =
         | (EqualExpr (x, y)) ->
             let (x', y') = to_int_pair_or_stuck (x, y)
             in LitB (x' = y')
-
         | (UnionExpr (l1, l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (removedupes (union l1' l2'))
@@ -239,7 +231,8 @@ let rec eval_helper func_env arg_env term =
 		and el = to_expr_or_stuck l in
 		(match el with
 			| (Lang l) -> Word (List.nth l i')
-			| (LangList l) -> Lang (List.nth l i'))
+			| (LangList l) -> Lang (List.nth l i')
+            | _ -> raise Stuck)
 	| VarExpr (name,body,inExpr) ->
             let argEval = eval_helper func_env arg_env body in
                 eval_helper func_env ((name, argEval) :: arg_env) inExpr
