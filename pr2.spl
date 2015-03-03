@@ -1,3 +1,6 @@
-let union (ll) =
-	(ll get 0) U (ll get 1) in
-union(langsfrom read)
+let r = read in
+let LangList = (langsfrom r) in
+let Limit = (limitfrom r) in
+let L1 = (LangList get 0) in
+let L2 = (LangList get 1) in
+(L1 U L2) trimto Limit
