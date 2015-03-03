@@ -16,6 +16,7 @@ type expr =
     | InputLang of expr
     | InputLimit of expr
     | HeadExpr of expr
+    | TailExpr of expr 
     | GetExpr of expr * expr
     | WordLengthExpr of expr * expr
     | ConsExpr of expr * expr
@@ -201,6 +202,9 @@ let rec eval_helper func_env arg_env term =
 	| (HeadExpr (l)) ->
 		let (l') = to_lang_or_stuck(l)
 		in Word (List.hd l')
+	| (TailExpr (l)) ->
+		let (l') = to_lang_or_stuck(l)
+		in Lang (List.tl l')
 	| (ConsExpr (l1,l2)) ->
 		let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
 		in Lang (l1'@l2')

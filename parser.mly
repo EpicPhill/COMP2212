@@ -58,7 +58,7 @@ expr:
 	| expr GREATERTHAN expr { GreaterThanExpr ($1,$3) }
 	| expr LESSTHAN expr { LessThanExpr ($1, $3) }
 	| expr HEAD expr { HeadExpr ($1) }
-	/*| expr TAIL expr { TailExpr ($1) }*/
+	| expr TAIL expr { TailExpr ($1) }
 	| LANGS expr			{ InputLang $2 }
 	| LIMIT 	expr			{ InputLimit $2 }
 	| expr GET expr		{ GetExpr ($1,$3) }
