@@ -1,0 +1,3 @@
+let postfix (r) =
+	(((langsfrom r) get 0) append 'a') trimto (limitfrom r) in
+postfix(read)
