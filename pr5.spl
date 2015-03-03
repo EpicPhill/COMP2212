@@ -1,3 +1,6 @@
-let concatenate (r) =
-	 ((langsfrom r) get 0) concat ({a,b,c} wordlength 2) limit (limitfrom r) in 
-concatenate(read)
+let r = read in
+let LangList = (langsfrom r) in
+let Limit = (limitfrom r) in
+let L1 = (LangList get 0) in
+let L2 = ({a,b,c} wordlength 2) in
+L1 concat L2 limit Limit

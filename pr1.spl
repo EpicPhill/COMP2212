@@ -1,3 +1,5 @@
-let postfix (r) =
-	(((langsfrom r) get 0) append 'a') trimto (limitfrom r) in
-postfix(read)
+let r = read in
+let LangList = (langsfrom r) in
+let Limit = (limitfrom r) in
+let L1 = (LangList get 0) in
+(L1 append 'a') trimto Limit
