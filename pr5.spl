@@ -1,0 +1,3 @@
+let concatenate (r) =
+	 ((langsfrom r) get 0) concat ({a,b,c} wordlength 2) limit (limitfrom r) in 
+concatenate(read)
