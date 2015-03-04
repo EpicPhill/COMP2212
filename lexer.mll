@@ -1,6 +1,8 @@
 {
 	open Parser
 	exception Eof
+	exception UnrecognisedSymbol of string
+	let to_string c = String.make 1 c
 }
 
 rule main = parse
@@ -10,6 +12,8 @@ rule main = parse
 	| '"'['a'-'z']+'"' as lxm 	{ WORD(lxm) }
 	| 'U' 						{ UNION }
 	| 'N' 						{ INTERSECT }
+	| "false"					{ FALSE }
+	| "true"					{ TRUE }
 	| "read" 					{ READ }
 	| "let" 					{ LET }
 	| "in" 						{ IN }
@@ -48,6 +52,6 @@ rule main = parse
 	| '=' 						{ EQUALS }
 	| ':' 						{ COLON }
 	| ''' 						{ QUOTE }
-	| ';' 						{ EOL }
 	| ['A'-'Z''a'-'z''0'-'9']+ as lxm { STRING lxm }
 	| eof 						{ EOF }
+	| _ as lxm { raise (UnrecognisedSymbol (to_string lxm)) }

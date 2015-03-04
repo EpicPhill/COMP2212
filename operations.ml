@@ -1,5 +1,8 @@
+exception InvalidInput of string
+
 type word = string;;
 type lang = word list;;
+let to_string c = String.make 1 c
 let rec append (l:lang) (c:char) = match l with
 	| h::t -> (h^(String.make 1 c)) :: append t c
 	| smaller -> smaller;;
@@ -25,7 +28,7 @@ let explode s =
 			explodehelper (curr-1) (s.[curr] :: exploded) in
 	explodehelper (String.length s -1) [];;
 let allowedChars = ['a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h'; 'i'; 'j'; 'k'; 'l'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; 's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z']
-let makestring (c:char) = if (c == ':') then "" else if (List.mem c allowedChars) then String.make 1 c else failwith ("Invalid char");;
+let makestring (c:char) = if (c == ':') then "" else if (List.mem c allowedChars) then String.make 1 c else raise (InvalidInput (to_string c));;
 let rec add_char_to_last l c = match l with
 	| [] -> []
 	| e :: [] -> [e^makestring c]

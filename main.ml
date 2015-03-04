@@ -7,11 +7,12 @@ open Printf
 let parseProgram c =
     try let lexbuf = Lexing.from_channel c in
             Parser.main Lexer.main lexbuf
-    with Parsing.Parse_error -> failwith "Parse failure!" ;;
+    with
+    	| Parsing.Parse_error -> failwith "Syntax error";;
 
 let arg = ref stdin in
 let setProg p = arg := open_in p in
-let usage = "./mysplinterpreter PROGRAM_FILE" in
+let usage = "./mysplinterpreter program" in
 parse [] setProg usage;
 let parsedProg = parseProgram !arg in
 let result = eval parsedProg in

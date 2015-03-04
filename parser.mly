@@ -13,6 +13,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token <int> INT
 %token <string> CHAR
 %token <string> WORD
+%token FALSE TRUE
 %token READ LET IN
 %token QUOTE
 %token CONS STRINGCONCAT
@@ -28,7 +29,7 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %token WORDLENGTH
 %token UNION INTERSECT APPEND
 %token ADD SUBTRACT MULTIPLY DIVIDE
-%token PRINTLIST EOL EOF
+%token PRINTLIST EOF
 %left APPEND
 %left UNION INTERSECT
 %start main
@@ -41,6 +42,8 @@ main:
 	expr EOF 		{ $1 }
 ;
 expr:
+	| FALSE			{ LitB false }
+ 	| TRUE			{ LitB true }
 	| INT			{ LitI $1 }
 	| character		{ LitC $1 }
 	| word 			{ Word $1 }
@@ -77,7 +80,6 @@ expr:
 	| expr WORDLENGTH expr  { WordLengthExpr ($1,$3) }
 	| expr COLON COLON expr		{ AndLangsExpr ($1,$4) }
 	| expr TRIM expr		{ TrimExpr ($1, $3) }
-	| expr EOL expr 		{ $1;$3 }
 	| IF expr THEN expr ELSE expr { IfElseExpr($2,$4,$6) }
 	| PRINTLIST expr 		{ PrintListExpr $2 }
 ;

@@ -50,8 +50,9 @@ type expr =
 let processline line =
     if (line.[0] = '{') then
         (Lang (convertlang line))
-    else
-        (LitI (int_of_string line));;
+    else try
+        (LitI (int_of_string line))
+    with e -> raise (InvalidInput line)
 
 exception NonPrintableType
 
@@ -91,64 +92,80 @@ let rec lookup env v = match env with
                                      then vvalue
                                      else lookup rest v
 
-exception Stuck
+exception NotExpr
+exception NotValidExpr
+exception NotInt
+exception NotLang
+exception NotLangList
+exception NotChar
+exception NotInput
+exception NotWord
+exception NotBool
+exception NotVar
+
+exception NotGetType
+exception NotTailType
+exception NotHeadType
+exception NotConcatType
+exception NotAndType
+exception NotLengthType
 
 let rec eval_helper func_env arg_env term =
-    let to_int_or_stuck(i) =
+    let to_bool(b) =
+        let bEval = eval_helper func_env arg_env b
+    in (match (bEval) with
+            | (LitB b') -> b'
+            | _ -> raise NotBool) in
+    let to_int(i) =
         let iEval = eval_helper func_env arg_env i
         in (match (iEval) with
             | (LitI i') -> (i')
-            | _ -> raise Stuck) in
-    let to_int_pair_or_stuck(x, y) =
+            | _ -> raise NotInt) in
+    let to_int_pair(x, y) =
     let xEval = eval_helper func_env arg_env x
         and yEval = eval_helper func_env arg_env y
         in (match (xEval, yEval) with
             | (LitI x', LitI y') -> (x', y')
-            | _ -> raise Stuck) in
-    let to_lang_or_stuck(l) =
+            | _ -> raise NotInt) in
+    let to_lang(l) =
         let lEval = eval_helper func_env arg_env l
         in (match (lEval) with
             | (Lang l') -> (l')
-            | _ -> raise Stuck) in
-    let to_lang_pair_or_stuck(l1,l2) =
+            | _ -> raise NotLang) in
+    let to_lang_pair(l1,l2) =
         let l1Eval = eval_helper func_env arg_env l1
         and l2Eval = eval_helper func_env arg_env l2
         in (match (l1Eval, l2Eval) with
             | (Lang l1', Lang l2') -> (l1', l2')
-            | _ -> raise Stuck) in
-    let to_langlist_or_stuck(l) =
+            | _ -> raise NotLang) in
+    let to_langlist(l) =
         let lEval = eval_helper func_env arg_env l
         in (match (lEval) with
             | (LangList l') -> (l')
-            | _ -> raise Stuck) in
-    let to_char_or_stuck(c) =
+            | _ -> raise NotLangList) in
+    let to_char(c) =
         let cEval = eval_helper func_env arg_env c
         in (match cEval with
             | (LitC c') -> c'
-            | _ -> raise Stuck) in
-    let to_input_or_stuck(i) =
+            | _ -> raise NotChar) in
+    let to_input(i) =
         let iEval = eval_helper func_env arg_env i
         in (match iEval with
             | (Input (l,i)) -> (l,i)
-            | _ -> raise Stuck) in
-    let to_word_or_stuck(w) =
+            | _ -> raise NotInput) in
+    let to_word(w) =
         let wEval = eval_helper func_env arg_env w
         in (match wEval with
             | (Word w') -> w'
-            | _ -> raise Stuck) in
-    let to_string_or_stuck(s) =
-        let sEval = eval_helper func_env arg_env s
-        in (match sEval with
-            | (Var v) -> v
-            | _ -> raise Stuck) in
-    let to_expr_or_stuck(e) =
+            | _ -> raise NotWord) in
+    let to_expr(e) =
         let eEval = eval_helper func_env arg_env e
         in (match eEval with
             | (Lang l) -> Lang l
             | (LangList l) -> LangList l
             | (Word w) -> Word w
             | (LitC c) -> LitC c
-            | _ -> raise Stuck) in
+            | _ -> raise NotValidExpr) in
     match term with
         None -> None
         | (Var v) -> lookup arg_env v
@@ -160,104 +177,102 @@ let rec eval_helper func_env arg_env term =
         | (Input (l,i)) -> None
         | (LangList ll) -> LangList ll
         | (IfElseExpr (cond, tExpr, fExpr)) ->
-            let condEval = eval_helper func_env arg_env cond
-            in (match condEval with
-                | (LitB b) -> eval_helper func_env arg_env (if b then tExpr else fExpr)
-                | _ -> raise Stuck)
+            if (to_bool cond) then tExpr else fExpr
         | (AddExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitI (x' + y')
         | (SubExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitI (x' - y')
         | (MultExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitI (x' * y')
         | (LessThanExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitB (x' < y')
         | (GreaterThanExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitB (x' > y')
         | (EqualExpr (x, y)) ->
-            let (x', y') = to_int_pair_or_stuck (x, y)
+            let (x', y') = to_int_pair (x, y)
             in LitB (x' = y')
         | (ContainsExpr (l,w)) ->
-            LitB (List.mem (to_word_or_stuck w) (to_lang_or_stuck l))
+            LitB (List.mem (to_word w) (to_lang l))
         | (UnionExpr (l1, l2)) ->
-            let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+            let (l1', l2') = to_lang_pair(l1,l2)
             in Lang (removedupes (union l1' l2'))
         | (IntersectionExpr (l1,l2)) ->
-            let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+            let (l1', l2') = to_lang_pair(l1,l2)
             in Lang (removedupes (intersection l1' l2'))
         | (AppendExpr (l,c)) ->
-            Lang (removedupes (append (to_lang_or_stuck l) (to_char_or_stuck c)))
+            Lang (removedupes (append (to_lang l) (to_char c)))
         | (ConcatExpr (l1,l2,i)) ->
-            let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
-            and i' = to_int_or_stuck i in
+            let (l1', l2') = to_lang_pair(l1,l2)
+            and i' = to_int i in
             if ((List.length l2') > 1) then Lang (concat_multi l1' l2' i')
             else Lang (concat_single l1' (List.nth l2' 0).[0] (i'-1))
         | (TrimExpr (l,i)) ->
-            Lang (trim (to_lang_or_stuck l) (to_int_or_stuck i))
+            Lang (trim (to_lang l) (to_int i))
         | (UniqueExpr l) ->
-            Lang (removedupes (to_lang_or_stuck l))
+            Lang (removedupes (to_lang l))
         | Read ->
             readin ()
         | (HeadExpr (l)) ->
-            let el = to_expr_or_stuck l in
+            let el = to_expr l in
             (match el with
                 | (Lang l) -> Word (List.hd l)
-                | (LangList l) -> Lang (List.hd l))
+                | (LangList l) -> Lang (List.hd l)
+                | _ -> raise NotHeadType)
         | (TailExpr (l)) ->
-            let el = to_expr_or_stuck l in
+            let el = to_expr l in
             (match el with
                 | (Lang l) -> Lang (List.tl l)
-                | (LangList l) -> LangList (List.tl l))
+                | (LangList l) -> LangList (List.tl l)
+                | _ -> raise NotTailType)
         | (ConsExpr (l1,l2)) ->
-            let (l1', l2') = to_lang_pair_or_stuck(l1,l2)
+            let (l1', l2') = to_lang_pair(l1,l2)
             in Lang (l1'@l2')
         | (StringConcatExpr (l1,l2)) ->
-            let el1 = to_expr_or_stuck(l1)
-            and el2 = to_expr_or_stuck(l2) in
+            let el1 = to_expr(l1)
+            and el2 = to_expr(l2) in
             (match (el1,el2) with
                 | (Word w1, Word w2) -> Word(w1 ^ w2)
                 | (Word w, LitC c) -> Word(w ^ makestring c)
                 | (LitC c, Word w) -> Word(makestring c ^ w)
-                | (Word w, _) -> failwith ("not a char or a string, val 2")
-                | (_, Word w) -> failwith ("not a char or a string, val 1")
-                | (_, LitC c) -> failwith ("not a char or a string, val 1")
-                | (LitC c, _) -> failwith ("not a char or a string, val 2"))
+                | _ -> raise NotConcatType)
         | (AndLangsExpr (l1,l2)) ->
-            let el1 = to_expr_or_stuck(l1)
-            and el2 = to_expr_or_stuck(l2) in
+            let el1 = to_expr(l1)
+            and el2 = to_expr(l2) in
             (match (el1,el2) with
                 | (Word w1,Word w2) -> Lang (w1::w2::[])
                 | (Word w,Lang l) -> Lang (w::l)
                 | (Lang l,Word w) -> Lang (l@[w])
                 | (Lang l1,Lang l2) -> LangList (l1::l2::[])
-                | (Lang l,LangList ll) -> LangList (l::ll))
+                | (Lang l,LangList ll) -> LangList (l::ll)
+                | _ -> raise NotAndType)
         | (WordLengthExpr (l,i)) ->
-            Lang (conswords (to_lang_or_stuck l) (to_int_or_stuck i))
+            Lang (conswords (to_lang l) (to_int i))
         | (PrintListExpr l) ->
-            print_res (Lang (to_lang_or_stuck l)); None
+            print_res (Lang (to_lang l)); None
         | (InputLang r) ->
-            let (l,i) = to_input_or_stuck(r)
+            let (l,i) = to_input(r)
             in (LangList l)
         | (InputLimit r) ->
-            let (l,i) = to_input_or_stuck(r)
+            let (l,i) = to_input(r)
             in (LitI i)
         | (LengthExpr (l)) ->
-            let el = to_expr_or_stuck l in
+            let el = to_expr l in
             (match el with
                 | (Lang l) -> LitI (List.length l)
-                | (LangList l) -> LitI (List.length l))
+                | (LangList l) -> LitI (List.length l)
+                | _ -> raise NotLengthType)
         | (GetExpr (l,i)) ->
-            let i' = to_int_or_stuck i
-            and el = to_expr_or_stuck l in
+            let i' = to_int i
+            and el = to_expr l in
             (match el with
                 | (Lang l) -> Word (List.nth l i')
                 | (LangList l) -> Lang (List.nth l i')
-                | _ -> raise Stuck)
+                | _ -> raise NotGetType)
         | (VarExpr (name,body,inExpr)) ->
             let argEval = eval_helper func_env arg_env body in
             eval_helper func_env ((name, argEval) :: arg_env) inExpr
@@ -269,6 +284,7 @@ let rec eval_helper func_env arg_env term =
                 | (Var f) ->
                     (match lookup func_env f with
                         | (argName, body) -> eval_helper func_env ((argName, argEval) :: arg_env) body)
-                | _ -> raise Stuck)
+                | _ -> raise NotVar)
+        | _ -> raise NotExpr
 
 let eval term = eval_helper [] [] term ;;
