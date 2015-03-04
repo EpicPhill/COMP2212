@@ -29,6 +29,7 @@ let explode s =
 	explodehelper (String.length s -1) [];;
 let allowedChars = ['a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h'; 'i'; 'j'; 'k'; 'l'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; 's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z']
 let makestring (c:char) = if (c == ':') then "" else if (List.mem c allowedChars) then String.make 1 c else raise (InvalidInput (to_string c));;
+let makeword (c:char) (len:int) = String.make len c;;
 let rec add_char_to_last l c = match l with
 	| [] -> []
 	| e :: [] -> [e^makestring c]
@@ -48,9 +49,11 @@ let rec pow x y = match (x,y) with
 	| (1,_) -> 1
 	| (_,1) -> x
 	| (x,y) -> x*(pow x (y-1));;
-let rec concat_single (l:lang)  (c:char)  (i:int) = match (l,i) with
-	| (_,0) -> reverse l
-	| (h::t,_) -> concat_single ((h^(makestring c))::l) c (i-1);;
+let concat_single (l:lang) (c:char) (i:int) =
+	let rec concat_inner (l:lang) (c:char) (i:int) = match (l,i) with
+		| (_,0) -> []
+		| (h::t,_) -> (h^(makeword c i)) :: (concat_inner l c (i-1)) in
+	List.hd l::reverse (concat_inner l c i);;
 let rec newword (cl:lang) (wl:int) = match wl with
 	| 0 -> ""
 	| _ -> get_random_element cl ^ newword cl (wl-1);;
