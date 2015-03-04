@@ -177,7 +177,7 @@ let rec eval_helper func_env arg_env term =
         | (Input (l,i)) -> None
         | (LangList ll) -> LangList ll
         | (IfElseExpr (cond, tExpr, fExpr)) ->
-            if (to_bool cond) then tExpr else fExpr
+            eval_helper func_env arg_env (if (to_bool cond) then tExpr else fExpr)
         | (AddExpr (x, y)) ->
             let (x', y') = to_int_pair (x, y)
             in LitI (x' + y')
@@ -236,6 +236,7 @@ let rec eval_helper func_env arg_env term =
             let el1 = to_expr(l1)
             and el2 = to_expr(l2) in
             (match (el1,el2) with
+                | (LitC c1, LitC c2) -> Word(makestring c1 ^ makestring c2)
                 | (Word w1, Word w2) -> Word(w1 ^ w2)
                 | (Word w, LitC c) -> Word(w ^ makestring c)
                 | (LitC c, Word w) -> Word(makestring c ^ w)
