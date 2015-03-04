@@ -1,5 +1,19 @@
 let r = read in
+let Langs = langsfrom r in
+let Limit = limitfrom r in
+let L1 = Langs get 0 in
+let origW = L1 get 0 in
+let catW = "a" in
+let makeWord(j) =
+    if j < 1 then catW else catW^makeWord(j-1) in
+let concatenate(i) =
+    if i = Limit-1 then {} else (origW^makeWord(i))::concatenate(i+1) in
+origW::concatenate(0)
+
+// alternate solution with built in functions
+let r = read in
 let LangList = (langsfrom r) in
 let Limit = (limitfrom r) in
 let L1 = (LangList get 0) in
 L1 concat {a} limit Limit
+//

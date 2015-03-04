@@ -1,5 +1,22 @@
 let r = read in
+let Langs = langsfrom r in
+let Limit = limitfrom r in
+let rL = Langs get 0 in
+let postchar = 'a' in
+let postfix(ll) =
+    let L = ll get 0 in
+    let nL = ll get 1 in
+    if (length L) < 1 then nL else
+        let h = (head L) in
+        let t = (tail L) in
+        let nh = h ^ postchar in
+        postfix(t::(nL::nh)) in
+unique (postfix(rL::{}) trimto Limit)
+
+// alternate solution with built in functions
+let r = read in
 let LangList = (langsfrom r) in
 let Limit = (limitfrom r) in
 let L1 = (LangList get 0) in
 (L1 append 'a') trimto Limit
+//
