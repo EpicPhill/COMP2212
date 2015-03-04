@@ -55,7 +55,7 @@ exception NonPrintableType
 
 let rec print_list_nicely = function
     | [] -> ()
-    | ""::t -> print_list_nicely t
+    | ""::t ->print_string ":" ; print_string "," ; print_list_nicely t
     | h::[] -> print_string h
     | h::t -> print_string h ; print_string "," ; print_list_nicely t ;;
 
