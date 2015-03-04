@@ -10,7 +10,6 @@ type expr =
     | LitC of char
     | Word of word
     | Lang of lang
-    (* maybe? possibly change to expr lists to make things more generic but that might break, and we don't (yet) need lists of anything else *)
     | LangList of lang list
     | Input of lang list * int
     | InputLang of expr
@@ -26,7 +25,6 @@ type expr =
     | ConcatExpr of expr * expr * expr
     | TrimExpr of expr * expr
     | UniqueExpr of expr
-    (* exprs to chain operations? *)
     | AddExpr of expr * expr
     | SubExpr of expr * expr
     | MultExpr of expr * expr
@@ -42,7 +40,6 @@ type expr =
     | VarExpr of string *  expr * expr
     | AppExpr of expr * expr
     | AndLangsExpr of expr * expr
-    (*something like this, might not need it*)
     | ForEach of string * string * expr
     | PrintListExpr of expr
     | Read
