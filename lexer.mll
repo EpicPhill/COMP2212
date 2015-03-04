@@ -10,7 +10,7 @@ rule main = parse
 	| ['0'-'9']+ as lxm 		{ INT(int_of_string lxm) }
 	| '''['a'-'z']''' as lxm 	{ CHAR(lxm) }
 	| '"'['a'-'z']+'"' as lxm 	{ WORD(lxm) }
-	| "//" ['a' - 'z'] + "//"   { main lexbuf }     
+	| "//" _* "//"   { main lexbuf }     
 	| 'U' 						{ UNION }
 	| 'N' 						{ INTERSECT }
 	| "false"					{ FALSE }

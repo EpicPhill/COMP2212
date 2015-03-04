@@ -8,6 +8,7 @@ let explode s =
 let char_from_string s = s.[1];;
 let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %}
+
 %token <string> STRING
 %token <string list> LANG
 %token <int> INT
@@ -39,7 +40,8 @@ let word_from_string s = String.sub s 1 (String.length s -2) ;;
 %type <char> character
 %%
 main:
-	expr EOF 		{ $1 }
+	| EOF			{None}
+	| expr EOF 		{ $1 }
 ;
 expr:
 	| FALSE			{ LitB false }
