@@ -46,7 +46,7 @@ let convertlang l =
 		| ',' :: ( e :: _ as t ) -> converthelper t (combo@[makestring e])
 		| a :: ( ',' :: _ as t ) -> converthelper t combo
 		| a :: ( e :: _ as t) -> converthelper t (add_char_to_last combo e) in
-	converthelper (trimwhite (explode l)) []
+	removedupes (converthelper (trimwhite (explode l)) [])
 let get_random_element l = List.nth l (Random.int (List.length l))
 let rec pow x y = match (x,y) with
 	| (_,0)
