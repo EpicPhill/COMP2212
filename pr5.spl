@@ -14,10 +14,10 @@ let conmult (l) =
                 let t = (tail L) in
                 let nh = frontchar ^ h in
                 concatenate(t::(nL::nh)) in
-        unique (concatenate (charlang::{}) trimto Limit) @ conmult (tail l)
+        unique (concatenate (charlang::{})) @ conmult (tail l)
     else
         {} in
-conmult(L1)
+conmult(L1) trimto Limit
 
 // alternate solution with built in functions
 let r = read in
