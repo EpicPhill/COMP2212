@@ -2,20 +2,22 @@ let r = read in
 let Langs = langsfrom r in
 let Limit = limitfrom r in
 let L1 = Langs get 0 in
-if (length L1) > 0 then
-    let frontchar = L1 get 0 in
-    let charlang = {a,b,c} wordlength 2 in
-    let concatenate (ll) =
-        let L = ll get 0 in
-        let nL = ll get 1 in
-        if (length L) < 1 then nL else
-            let h = (head L) in
-            let t = (tail L) in
-            let nh = frontchar ^ h in
-            concatenate(t::(nL::nh)) in
-    unique (concatenate (charlang::{}) trimto Limit)
-else
-    {}
+let conmult (l) =
+    if (length l) > 0 then
+        let frontchar = l get 0 in
+        let charlang = {a,b,c} wordlength 2 in
+        let concatenate (ll) =
+            let L = ll get 0 in
+            let nL = ll get 1 in
+            if (length L) < 1 then nL else
+                let h = (head L) in
+                let t = (tail L) in
+                let nh = frontchar ^ h in
+                concatenate(t::(nL::nh)) in
+        unique (concatenate (charlang::{}) trimto Limit) @ conmult (tail l)
+    else
+        {} in
+conmult(L1)
 
 // alternate solution with built in functions
 let r = read in
