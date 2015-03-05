@@ -23,6 +23,9 @@ let rec intersection (l1:lang) (l2:lang) = match l1 with
 let rec removedupes l:lang = match (order l) with
     	| h :: (ht :: _ as t) -> if h = ht then removedupes t else h :: removedupes t
     	| smaller -> smaller
+let rec trimwhite = function
+	| [] -> []
+	| h::t -> if h = ' ' || h = '\t' then trimwhite t else h::(trimwhite t)
 let explode s =
 	let rec explodehelper curr exploded =
 		if curr < 0 then exploded else
@@ -43,7 +46,7 @@ let convertlang l =
 		| ',' :: ( e :: _ as t ) -> converthelper t (combo@[makestring e])
 		| a :: ( ',' :: _ as t ) -> converthelper t combo
 		| a :: ( e :: _ as t) -> converthelper t (add_char_to_last combo e) in
-	converthelper (explode l) []
+	converthelper (trimwhite (explode l)) []
 let get_random_element l = List.nth l (Random.int (List.length l))
 let rec pow x y = match (x,y) with
 	| (_,0)
