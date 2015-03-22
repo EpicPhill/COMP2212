@@ -1,0 +1,35 @@
+let r = read in
+let Langs = langsfrom r in
+let Limit = limitfrom r in
+let L1 = Langs get 0 in
+let L2 = Langs get 1 in
+let union(ll) =
+    let iL1 = ll get 0 in
+    let iL2 = ll get 1 in
+    if (length iL1) < 1 then iL2 else
+        let h = (head iL1) in
+        let t = (tail iL1) in
+        if (iL2 contains h) then union(t::iL2) else union(t::(h::iL2)) in
+let nL1 =
+	if (length L1) > 0 then
+	    let origW = L1 get 0 in
+	    let catW = "a" in
+	    let makeWord(j) =
+	        if j < 1 then catW else catW^makeWord(j-1) in
+	    let concatenate(i) =
+	        if i = Limit-1 then {} else (origW^makeWord(i))::concatenate(i+1) in
+	    origW::concatenate(0)
+	else
+	    {} in
+let nL2 =
+	if (length L2) > 0 then
+	    let origW = L2 get 0 in
+	    let catW = "b" in
+	    let makeWord(j) =
+	        if j < 1 then catW else catW^makeWord(j-1) in
+	    let concatenate(i) =
+	        if i = Limit-1 then {} else (origW^makeWord(i))::concatenate(i+1) in
+	    origW::concatenate(0)
+	else
+	    {} in
+unique (union (nL1::nL2) trimto Limit)

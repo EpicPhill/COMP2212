@@ -1,0 +1,30 @@
+//let r = read in
+let LangList = (langsfrom r) in
+let Limit = (limitfrom r) in
+let L1 = (LangList get 0) in
+let L2 = (LangList get 1) in
+((L1 U L2) append 'a') trimto Limit//
+
+let r = read in
+let Langs = langsfrom r in
+let rL1 = Langs get 0 in
+let rL2 = Langs get 1 in
+let Limit = limitfrom r in 
+let union(ll) =
+    let L1 = ll get 0 in
+    let L2 = ll get 1 in
+    if (length L1) < 1 then L2 else
+        let h = (head L1) in
+        let t = (tail L1) in
+        if (L2 contains h) then union(t::L2) else union(t::(h::L2)) in
+let nL1 = (union(rL1::rL2) trimto (limitfrom r)) in
+let postchar = 'a' in
+let postfix(ll) =
+    let L = ll get 0 in
+    let nL = ll get 1 in
+    if (length L) < 1 then nL else
+        let h = (head L) in
+        let t = (tail L) in
+        let nh = h ^ postchar in
+        postfix(t::(nL::nh)) in
+unique (postfix(nL1::{}) trimto Limit)

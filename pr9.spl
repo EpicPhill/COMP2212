@@ -1,0 +1,28 @@
+let r = read in
+let Langs = langsfrom r in
+let Limit = limitfrom r in
+let L1 = Langs get 0 in
+let L2 = Langs get 1 in
+let union(ll) =
+    let iL1 = ll get 0 in
+    let iL2 = ll get 1 in
+    if (length iL1) < 1 then iL2 else
+        let h = (head iL1) in
+        let t = (tail iL1) in
+        if (iL2 contains h) then union(t::iL2) else union(t::(h::iL2)) in
+let conmult (l) =
+    if (length l) > 0 then
+        let frontchar = l get 0 in
+        let charlang = {a,b} in
+        let concatenate (ll) =
+            let L = ll get 0 in
+            let nL = ll get 1 in
+            if (length L) < 1 then nL else
+                let h = (head L) in
+                let t = (tail L) in
+                let nh = frontchar ^ h in
+                concatenate(t::(nL::nh)) in
+        unique (concatenate (charlang::{})) @ conmult (tail l)
+    else
+        {} in
+conmult(union(L1::L2)) trimto Limit
