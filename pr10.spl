@@ -10,7 +10,7 @@ let union(ll) =
         let h = (head iL1) in
         let t = (tail iL1) in
         if (iL2 contains h) then union(t::iL2) else union(t::(h::iL2)) in
-if Limit = 0 then
+if Limit > 1 then
 	let nL1 =
 		if (length L1) > 0 then
 		    let origW = L1 get 0 in
